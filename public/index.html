@@ -580,6 +580,17 @@
             color: var(--steel-grey);
             opacity: 0.85;
             white-space: nowrap;
+            cursor: pointer;
+            border-bottom: 1px dotted rgba(127,133,137,0.4);
+            transition: opacity 0.15s, color 0.15s;
+        }
+        .status-local-path:hover {
+            opacity: 1;
+            color: var(--pmo-green);
+        }
+        .status-local-path.copied {
+            color: var(--pmo-green);
+            opacity: 1;
         }
 
         .status-drive-link {
@@ -3585,7 +3596,7 @@
                 // Local path — hub-tabs inherit parent workspace
                 let localCell;
                 if (p.local) {
-                    localCell = `<span class="status-local-path" title="${esc(p.local)}">${esc(p.local.replace(/^C:\\Users\\willl\\Projects\\/, ''))}</span>`;
+                    localCell = `<span class="status-local-path" title="Click to copy full path" onclick="statusCopyLocal(this,'${esc(p.local)}')">${esc(p.local.replace(/^C:\\Users\\willl\\Projects\\/, ''))}</span>`;
                 } else if (p.type === 'hub-tab' && p.parent) {
                     const parentPath = (data[p.parent] && data[p.parent].local) ? data[p.parent].local.replace(/^C:\\Users\\willl\\Projects\\/, '') : p.parent;
                     localCell = `<span style="opacity:0.5;font-style:italic">↪ ${esc(parentPath)}</span>`;
@@ -3930,11 +3941,38 @@
         window.copyDiagramCode = copyDiagramCode;
         window.toggleSidebar = toggleSidebar;
         window.HubNav = HubNav;
+        function statusCopyLocal(el, path) {
+            navigator.clipboard.writeText(path).then(() => {
+                const orig = el.textContent;
+                el.textContent = 'Copied!';
+                el.classList.add('copied');
+                setTimeout(() => {
+                    el.textContent = orig;
+                    el.classList.remove('copied');
+                }, 1500);
+            }).catch(() => {
+                // Fallback for environments where clipboard API is blocked
+                const ta = document.createElement('textarea');
+                ta.value = path;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                const orig = el.textContent;
+                el.textContent = 'Copied!';
+                el.classList.add('copied');
+                setTimeout(() => { el.textContent = orig; el.classList.remove('copied'); }, 1500);
+            });
+        }
+
         window.statusLoad = statusLoad;
         window.statusLoadTokens = statusLoadTokens;
         window.statusRefreshClaude = statusRefreshClaude;
         window.statusResyncProjects = statusResyncProjects;
         window.statusToggleDesc = statusToggleDesc;
+        window.statusCopyLocal = statusCopyLocal;
         window.statusShowGeminiForm = statusShowGeminiForm;
         window.statusHideGeminiForm = statusHideGeminiForm;
         window.statusSaveGemini = statusSaveGemini;
