@@ -1528,6 +1528,10 @@
                         <span class="sidebar-icon">&#x2696;</span>
                         <span class="sidebar-label">Pairwise Analysis</span>
                     </button>
+                    <button class="sidebar-item" data-project="m4p-model">
+                        <span class="sidebar-icon">&#x1f3db;</span>
+                        <span class="sidebar-label">M4P Model</span>
+                    </button>
                 </div>
                 <div class="sidebar-footer">
                     <span class="sidebar-version">v2.0</span>
@@ -2014,6 +2018,22 @@
                     </div>
                 </div> <!-- /project-pairwise -->
 
+                <!-- PROJECT: M4P Model -->
+                <div class="project-panel" id="project-m4p-model">
+                    <div class="project-tabs" data-project="m4p-model">
+                        <button class="project-tab active" data-tab="eco-diagram">Eco Diagram</button>
+                    </div>
+
+                    <!-- TAB: Eco Diagram -->
+                    <div id="m4p-eco-diagram" class="project-tab-content active" style="padding:0;height:calc(100vh - 120px);">
+                        <iframe
+                            src="m4p-eco-diagram/index.html"
+                            style="width:100%;height:100%;border:none;display:block;"
+                            title="M4P Eco Diagram"
+                        ></iframe>
+                    </div>
+                </div> <!-- /project-m4p-model -->
+
                 <footer>
                     <p>3PMO Hub | Personal Productivity Hub</p>
                     <p>Cloud synced via Firebase</p>
@@ -2322,6 +2342,16 @@
                     { id: 'analysis', label: 'Analysis' }
                 ],
                 onActivate: function() { pwRender(); pwLoadAnalyses(); }
+            },
+            {
+                id: 'm4p-model',
+                name: 'M4P Model',
+                icon: '&#x1f3db;',
+                prefix: 'm4p',
+                defaultTab: 'eco-diagram',
+                tabs: [
+                    { id: 'eco-diagram', label: 'Eco Diagram' }
+                ]
             }
         ];
 
