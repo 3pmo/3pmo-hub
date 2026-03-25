@@ -17,7 +17,9 @@ console.log('Syncing project registry...');
 
 try {
   const content = fs.readFileSync(REGISTRY_PATH, 'utf-8');
-  const lines = content.split('\n');
+  // Handle BOM if present
+  const cleanContent = content.charCodeAt(0) === 0xFEFF ? content.slice(1) : content;
+  const lines = cleanContent.split('\n');
   
   const projects = [];
   let currentProject = null;

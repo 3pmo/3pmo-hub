@@ -6,14 +6,11 @@ import OrganizerTab from './tabs/OrganizerTab';
 import PairwiseTab from './tabs/PairwiseTab';
 import ToDoTab from './tabs/ToDoTab';
 
-type PrimaryTab = 'control' | 'thoughts';
-type ControlSubTab = 'status' | 'workflow';
-type ThoughtsSubTab = 'organizer' | 'pairwise' | 'todo';
+// Tabs match the old sub-tabs but are now all in the sidebar
+type Tab = 'status' | 'workflow' | 'organizer' | 'pairwise' | 'todo';
 
 export default function App() {
-  const [primaryTab, setPrimaryTab] = useState<PrimaryTab>('control');
-  const [controlSub, setControlSub] = useState<ControlSubTab>('status');
-  const [thoughtsSub, setThoughtsSub] = useState<ThoughtsSubTab>('organizer');
+  const [activeTab, setActiveTab] = useState<Tab>('status');
   const [isPrintable, setIsPrintable] = useState(false);
 
   useEffect(() => {
@@ -21,90 +18,72 @@ export default function App() {
     else document.documentElement.classList.remove('theme-printable');
   }, [isPrintable]);
 
+  const getTabTitle = (tab: Tab) => {
+    switch (tab) {
+      case 'status': return 'Project Status';
+      case 'workflow': return 'Ecosystem Workflow';
+      case 'organizer': return 'Thought Organizer';
+      case 'pairwise': return 'Pairwise Analysis';
+      case 'todo': return 'To-Do List';
+    }
+  };
+
   return (
     <div className="app-container">
-      {/* ── Header ── */}
-      <header className="app-header">
-        <div className="logo-section">
+      {/* ── Left Sidebar ── */}
+      <aside className="sidebar">
+        <div className="brand-area">
           <img src="/3PMO_Logo.png" alt="3PMO Logo" className="logo-img"
             onError={e => { e.currentTarget.style.display = 'none'; }} />
           <h1 className="wordmark">
             <span className="wordmark-3">3</span>
             <span className="wordmark-pmo">PMO</span>
-            <span className="wordmark-divider">-</span>
-            <span className="wordmark-app">Hub</span>
           </h1>
         </div>
 
-        {/* Primary navigation */}
-        <nav className="primary-nav">
-          <button
-            className={`primary-tab-btn ${primaryTab === 'control' ? 'active' : ''}`}
-            onClick={() => setPrimaryTab('control')}
-          >
-            ⚙ Control
+        <nav className="nav-menu">
+          <div className="nav-group-title">Control</div>
+          <button className={`nav-link ${activeTab === 'status' ? 'active' : ''}`} onClick={() => setActiveTab('status')}>
+            📊 Status
           </button>
-          <button
-            className={`primary-tab-btn ${primaryTab === 'thoughts' ? 'active' : ''}`}
-            onClick={() => setPrimaryTab('thoughts')}
-          >
-            💡 Thoughts
+          <button className={`nav-link ${activeTab === 'workflow' ? 'active' : ''}`} onClick={() => setActiveTab('workflow')}>
+            🗺 Workflow
+          </button>
+
+          <div className="nav-group-title">Thoughts</div>
+          <button className={`nav-link ${activeTab === 'organizer' ? 'active' : ''}`} onClick={() => setActiveTab('organizer')}>
+            🧠 Organizer
+          </button>
+          <button className={`nav-link ${activeTab === 'pairwise' ? 'active' : ''}`} onClick={() => setActiveTab('pairwise')}>
+            ⚖ Pairwise
+          </button>
+          <button className={`nav-link ${activeTab === 'todo' ? 'active' : ''}`} onClick={() => setActiveTab('todo')}>
+            ✅ To-Do
           </button>
         </nav>
+      </aside>
 
-        <div className="header-actions">
-          <button className="theme-toggle-btn" onClick={() => setIsPrintable(!isPrintable)}>
-            {isPrintable ? '🌙 Dark' : '🖨 Print'}
-          </button>
+      {/* ── Main Content ── */}
+      <main className="main-content">
+        <header className="header">
+          <h2 className="header-title">{getTabTitle(activeTab)}</h2>
+          <div className="header-actions">
+            <button className="theme-toggle-btn" onClick={() => setIsPrintable(!isPrintable)}>
+              {isPrintable ? '🌙 Dark Mode' : '🖨 Printable Theme'}
+            </button>
+          </div>
+        </header>
+
+        <div className="app-content-wrapper">
+          <div className="tab-panel" key={activeTab}>
+            {activeTab === 'status' && <StatusTab />}
+            {activeTab === 'workflow' && <WorkflowTab />}
+            {activeTab === 'organizer' && <OrganizerTab />}
+            {activeTab === 'pairwise' && <PairwiseTab />}
+            {activeTab === 'todo' && <ToDoTab />}
+          </div>
         </div>
-      </header>
-
-      {/* ── Sub-nav ── */}
-      <div className="sub-nav">
-        {primaryTab === 'control' && (
-          <>
-            {(['status', 'workflow'] as ControlSubTab[]).map(t => (
-              <button key={t}
-                className={`sub-tab-btn ${controlSub === t ? 'active' : ''}`}
-                onClick={() => setControlSub(t)}>
-                {t === 'status' ? '📊 Status' : '🗺 Workflow'}
-              </button>
-            ))}
-          </>
-        )}
-        {primaryTab === 'thoughts' && (
-          <>
-            {(['organizer', 'pairwise', 'todo'] as ThoughtsSubTab[]).map(t => (
-              <button key={t}
-                className={`sub-tab-btn ${thoughtsSub === t ? 'active' : ''}`}
-                onClick={() => setThoughtsSub(t)}>
-                {t === 'organizer' ? '🧠 Organizer' : t === 'pairwise' ? '⚖ Pairwise' : '✅ To-Do'}
-              </button>
-            ))}
-          </>
-        )}
-      </div>
-
-      {/* ── Content ── */}
-      <main className="app-content">
-        {primaryTab === 'control' && (
-          <div className="tab-panel" key={controlSub}>
-            {controlSub === 'status' && <StatusTab />}
-            {controlSub === 'workflow' && <WorkflowTab />}
-          </div>
-        )}
-        {primaryTab === 'thoughts' && (
-          <div className="tab-panel" key={thoughtsSub}>
-            {thoughtsSub === 'organizer' && <OrganizerTab />}
-            {thoughtsSub === 'pairwise' && <PairwiseTab />}
-            {thoughtsSub === 'todo' && <ToDoTab />}
-          </div>
-        )}
       </main>
-
-      <footer className="app-footer">
-        <span className="wordmark-3">3</span><span className="wordmark-pmo">PMO</span>-Hub · Personal Productivity Hub
-      </footer>
     </div>
   );
 }

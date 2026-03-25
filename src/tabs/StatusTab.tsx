@@ -10,6 +10,7 @@ interface Project {
   github?: string;
   backlog?: string;
   deploy?: string;
+  drive?: string;
   local?: string;
 }
 
@@ -42,6 +43,11 @@ export default function StatusTab() {
     const matchStatus = filterStatus === 'All' || p.status === filterStatus;
     return matchSearch && matchStatus;
   });
+
+  const handleCopy = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    alert(`Copied ${label} path: ${text}`);
+  };
 
   return (
     <div className="status-tab">
@@ -97,11 +103,25 @@ export default function StatusTab() {
                 )}
               </div>
               {p.description && <p className="project-desc">{p.description}</p>}
+              
+              <div className="project-meta-links">
+                {p.drive && (
+                  <button className="path-copy-btn" onClick={() => handleCopy(p.drive!, 'Drive')} title={p.drive}>
+                    ☁ Copy Drive Path
+                  </button>
+                )}
+                {p.local && p.local.includes('C:') && (
+                  <button className="path-copy-btn" onClick={() => handleCopy(p.local!, 'Local')} title={p.local}>
+                    💻 Copy Local Path
+                  </button>
+                )}
+              </div>
+
               <div className="project-meta">
                 {p.last_active && <span>🕐 {p.last_active}</span>}
                 {p.current_ai && <span>🤖 {p.current_ai}</span>}
                 {p.github && (
-                  <a href={`https://github.com/3pmo/${p.github}`} target="_blank" rel="noreferrer"
+                  <a href={`https://github.com/3pmo/${p.github.replace(/`/g,'')}`} target="_blank" rel="noreferrer"
                     className="meta-link">⎇ GitHub</a>
                 )}
               </div>

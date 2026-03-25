@@ -42,74 +42,79 @@ h2 { color: var(--pmo-gold); }
 }
 
 /* =========================================================================
-   3. App Shell (Header, Navigation)
+   3. App Shell (Sidebar, Header, Layout)
    ========================================================================= */
 .app-container {
   display: flex;
-  flex-direction: column;
   min-height: 100vh;
   background-color: var(--ultra-dark-bg);
 }
 
-.app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
+.sidebar {
+  width: var(--sidebar-width);
   background-color: var(--bg-elevated);
-  border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; bottom: 0; left: 0;
+  z-index: 100;
 }
 
-.logo-section { display: flex; align-items: center; gap: 1rem; }
-.logo-img { height: 40px; width: auto; }
-.wordmark { font-family: var(--font-base); font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+.brand-area {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-lg);
+  border-bottom: 1px solid var(--border-subtle);
+  gap: 12px;
+}
+.logo-img { height: 32px; width: auto; }
+.wordmark { font-family: var(--font-base); font-size: 1.4rem; display: flex; gap: 2px; }
 .wordmark-3 { color: var(--pmo-grey); }
 .wordmark-pmo { color: var(--pmo-green); }
-.wordmark-divider { color: var(--border-subtle); }
-.wordmark-app { color: var(--agy-lime); font-size: 1.25rem; font-weight: 400; }
-.theme-printable .wordmark-app { color: var(--pmo-slate); }
 
-.primary-nav, .sub-nav { display: flex; gap: var(--space-md); }
-.primary-tab-btn, .sub-tab-btn, .theme-toggle-btn {
-  background: transparent;
-  color: var(--pmo-grey);
-  border: none;
-  border-radius: var(--radius-pill);
-  padding: 0.5rem 1.5rem;
-  font-size: 1rem;
-  cursor: pointer;
-  font-family: var(--font-base);
-  font-weight: 700;
-  transition: all var(--transition-fast);
+.nav-menu {
+  padding: var(--space-lg) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.nav-group-title {
+  font-size: 0.75rem; text-transform: uppercase; color: var(--pmo-slate);
+  margin-top: var(--space-md); margin-bottom: var(--space-sm); padding: 0 var(--space-sm);
+}
+.nav-link {
+  display: flex; align-items: center; padding: var(--space-sm) var(--space-md);
+  color: var(--text-secondary); border-radius: var(--radius-md); font-size: var(--text-sm);
+  font-weight: 700; transition: all var(--transition-fast); cursor: pointer; background: transparent; border: none; font-family: var(--font-base); text-align: left;
+}
+.nav-link:hover { background-color: var(--bg-hover); color: var(--pmo-green); transform: translateX(4px); }
+.nav-link.active { background-color: rgba(124, 193, 112, 0.1); color: var(--pmo-green); border-left: 3px solid var(--pmo-green); border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
 }
 
-.primary-tab-btn:hover, .sub-tab-btn:hover { color: var(--text-primary); background-color: var(--bg-hover); }
-.primary-tab-btn.active, .sub-tab-btn.active { background-color: rgba(124, 193, 112, 0.1); color: var(--pmo-green); }
+.header {
+  height: var(--header-height); padding: 0 var(--space-xl); display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle); background-color: rgba(5, 6, 6, 0.8); backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 90;
+}
+.header-title { margin: 0; }
 
 .theme-toggle-btn {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--pmo-grey); border-radius: var(--radius-pill);
+  padding: 0.5rem 1.5rem; font-size: 0.9rem; cursor: pointer; font-weight: bold; transition: all var(--transition-fast);
 }
-.theme-toggle-btn:hover { background-color: var(--bg-hover); }
+.theme-toggle-btn:hover { background-color: var(--bg-hover); color: var(--text-primary); }
 
-.sub-nav {
-  padding: 1rem 2rem;
-  background-color: var(--ultra-dark-bg);
-  border-bottom: 1px solid var(--border-subtle);
-  justify-content: center;
-}
-
-.app-content { flex: 1; padding: 2rem; max-width: 1400px; margin: 0 auto; width: 100%; }
+.app-content-wrapper { padding: 2rem; max-width: 1400px; margin: 0 auto; width: 100%; }
 .tab-panel { animation: fadeIn 0.3s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-.app-footer {
-  text-align: center;
-  padding: 2rem;
-  color: var(--pmo-grey);
-  font-size: var(--text-sm);
-  border-top: 1px solid var(--border-subtle);
-}
 
 /* =========================================================================
    4. Status Tab Components
@@ -252,3 +257,4 @@ h2 { color: var(--pmo-gold); }
 .pw-result-bar { height: 12px; background: var(--bg-card); border-radius: 6px; overflow: hidden; }
 .pw-result-fill { height: 100%; background: var(--pmo-gold); border-radius: 6px; }
 .pw-score { font-family: monospace; font-size: 0.9rem; color: var(--pmo-grey); width: 50px; text-align: right; }
+.project-meta-links { display: flex; gap: 8px; margin-bottom: 12px; } .path-copy-btn { background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-secondary); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; font-family: var(--font-base); } .path-copy-btn:hover { background: var(--bg-hover); color: var(--pmo-green); border-color: var(--pmo-green); }
