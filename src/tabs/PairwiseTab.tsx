@@ -144,7 +144,6 @@ export default function PairwiseTab() {
   return (
     <div className="pairwise-tab">
       <div className="org-header">
-        <h3>Pairwise Analysis</h3>
         <span className="auth-badge">● {user.email}</span>
         <button className="sign-out-btn" onClick={() => signOut(auth)}>Sign Out</button>
       </div>

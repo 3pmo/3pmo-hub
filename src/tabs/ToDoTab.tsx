@@ -1,16 +1,12 @@
 import { useState, useEffect } from 'react';
-import projectsData from '../assets/projects.json';
 import { initGoogleAPI, handleAuthClick, fetchTasks } from '../services/googleTasks';
 
 export default function ToDoTab() {
   const [tasks, setTasks] = useState<any[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
   const [isApiReady, setIsApiReady] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    setProjects(projectsData);
-    
     // Initialize Google API and pass callbacks
     initGoogleAPI(
       () => setIsApiReady(true),
@@ -24,28 +20,9 @@ export default function ToDoTab() {
 
   return (
     <div className="todo-tab">
-      <h2>Google Tasks & Local Projects</h2>
-      <p>This tab integrates your Google Tasks with your `project-registry.md` projects.</p>
+      <p style={{ color: 'var(--text-secondary)' }}>This tab integrates your Google Tasks for centralized task management.</p>
       
-      <div className="dashboard" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginTop: '2rem' }}>
-        <div className="card">
-          <h3>Local Projects</h3>
-          {projects.length === 0 ? (
-            <p>No projects loaded. Run `npm run dev` to automatically sync.</p>
-          ) : (
-            <ul style={{ paddingLeft: '20px' }}>
-              {projects.map(p => (
-                <li key={p.name} style={{ marginBottom: '0.5rem' }}>
-                  <strong>{p.name}</strong> - <span style={{ color: 'var(--pmo-gold)' }}>{p.status}</span>
-                  <div style={{ fontSize: '0.9em', color: 'var(--text-secondary)' }}>
-                    {p.description}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        
+      <div className="dashboard" style={{ marginTop: '2rem' }}>
         <div className="card">
           <h3>Google Tasks</h3>
           {!isAuthenticated ? (

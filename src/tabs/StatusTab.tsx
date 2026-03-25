@@ -53,11 +53,7 @@ export default function StatusTab() {
   return (
     <div className="status-tab">
       <div className="tab-section-header">
-        <h3>Project Status</h3>
         <p className="tab-section-desc">
-          All active and standing projects — synced from <code>project-registry.md</code>.
-          {' '}{projects.length} projects loaded.
-          <br/>
           <span className="sync-info" style={{ fontSize: '0.85rem', color: 'var(--pmo-gold)', marginTop: '8px', display: 'inline-block' }}>
             Last synced: {new Date(syncMeta.last_sync).toLocaleString()}. To refresh, run <code>npm run build</code> locally, commit, and push.
           </span>
@@ -69,7 +65,7 @@ export default function StatusTab() {
         {[
           { label: 'Total', value: projects.length },
           { label: 'Active', value: projects.filter(p => (p.status || '').includes('Active')).length },
-          { label: 'Standing', value: projects.filter(p => p.status === 'Standing').length },
+          { label: 'Standing', value: projects.filter(p => (p.status || '').includes('Standing')).length },
           { label: 'Tabs', value: projects.filter(p => p.status === 'Active Tab').length },
         ].map(s => (
           <div key={s.label} className="stat-card">

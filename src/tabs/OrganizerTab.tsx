@@ -153,7 +153,7 @@ export default function OrganizerTab() {
   return (
     <div className="organizer-tab">
       <div className="org-header">
-        <h3>Thought Organizer</h3>
+        {/* Main Tab */}
         <span className="auth-badge">● {user.email}</span>
         <button className="sign-out-btn" onClick={() => signOut(auth)}>Sign Out</button>
       </div>
