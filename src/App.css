@@ -119,7 +119,6 @@ h2 { color: var(--pmo-gold); }
 /* =========================================================================
    4. Status Tab Components
    ========================================================================= */
-.status-tab {}
 .tab-section-header { font-size: var(--text-h2); color: var(--pmo-gold); margin-bottom: var(--space-xs); }
 .tab-section-desc { color: var(--text-secondary); margin-bottom: var(--space-xl); }
 
@@ -163,7 +162,6 @@ h2 { color: var(--pmo-gold); }
 /* =========================================================================
    6. Organizer Tab Components
    ========================================================================= */
-.organizer-tab {}
 .org-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg); }
 .auth-badge { background: var(--bg-elevated); padding: 0.5rem 1rem; border-radius: var(--radius-pill); font-size: 0.85rem; border: 1px solid var(--border-subtle); }
 .sign-out-btn { background: transparent; color: var(--pmo-gold); border: 1px solid var(--pmo-gold); padding: 0.3rem 1rem; border-radius: var(--radius-pill); cursor: pointer; margin-left: var(--space-md); }
@@ -258,4 +256,38 @@ h2 { color: var(--pmo-gold); }
 .pw-result-fill { height: 100%; background: var(--pmo-gold); border-radius: 6px; }
 .pw-score { font-family: monospace; font-size: 0.9rem; color: var(--pmo-grey); width: 50px; text-align: right; }
 .project-meta-links { display: flex; gap: 8px; margin-bottom: 12px; } .path-copy-btn { background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-secondary); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; font-family: var(--font-base); } .path-copy-btn:hover { background: var(--bg-hover); color: var(--pmo-green); border-color: var(--pmo-green); }
+
+/* =========================================================================
+   8. Cost Tracker & Brand Tab Components
+   ========================================================================= */
+.cost-card { background: var(--bg-elevated); border: 1px solid var(--border-subtle); padding: 1.5rem; border-radius: var(--radius-lg); }
+.cost-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.cost-card-title { font-size: 1.1rem; color: var(--text-primary); }
+
+.gauge-container { margin: 1.5rem 0; }
+.gauge-track { height: 12px; background: rgba(255,255,255,0.05); border-radius: 6px; overflow: hidden; margin-bottom: 0.5rem; border: 1px solid var(--border-subtle); }
+.gauge-fill { height: 100%; border-radius: 6px; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+.gauge-fill.success { background: var(--pmo-green); box-shadow: 0 0 10px rgba(124, 193, 112, 0.3); }
+.gauge-fill.warning { background: var(--pmo-gold); box-shadow: 0 0 10px rgba(255, 158, 27, 0.3); }
+.gauge-fill.danger { background: #ff4757; box-shadow: 0 0 10px rgba(255, 71, 87, 0.3); }
+.gauge-stats { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--pmo-grey); }
+
+.cost-details { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-subtle); }
+.cost-detail-item { display: flex; justify-content: space-between; font-size: 0.85rem; }
+.cost-detail-item label { color: var(--pmo-slate); }
+.cost-detail-item span { color: var(--text-primary); font-family: monospace; }
+
+.theme-card { transition: all 0.3s ease; }
+.theme-card:hover { transform: translateY(-5px); }
+.pmo-theme { border-left: 4px solid var(--pmo-green) !important; }
+.work-theme { border-top: 4px solid #DB0011 !important; }
+.brand-specs li { margin-bottom: 0.5rem; padding-left: 1rem; position: relative; }
+.brand-specs li::before { content: '•'; position: absolute; left: 0; color: var(--pmo-gold); }
+
+.architecture-tab .diagram-container { 
+  background: white; padding: 2rem; border-radius: var(--radius-lg); 
+  box-shadow: var(--shadow-drop); border: 1px solid var(--border-subtle);
+}
+.theme-printable .architecture-tab .diagram-container { box-shadow: none; border: 1px solid #eee; }
+
 @media print { .sidebar, .header, .brand-area, .theme-toggle-btn, .app-footer, .nav-menu { display: none !important; } .main-content { margin-left: 0 !important; } .app-container { background: white !important; } .app-content-wrapper { padding: 0 !important; max-width: none !important; } }

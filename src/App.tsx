@@ -5,10 +5,13 @@ import WorkflowTab from './tabs/WorkflowTab';
 import OrganizerTab from './tabs/OrganizerTab';
 import PairwiseTab from './tabs/PairwiseTab';
 import ToDoTab from './tabs/ToDoTab';
+import BrandTab from './tabs/BrandTab';
+import ArchitectureTab from './tabs/ArchitectureTab';
+import CostTrackerTab from './tabs/CostTrackerTab';
 import syncMeta from './assets/sync-meta.json';
 
 // Tabs match the old sub-tabs but are now all in the sidebar
-type Tab = 'status' | 'workflow' | 'organizer' | 'pairwise' | 'todo';
+type Tab = 'status' | 'workflow' | 'organizer' | 'pairwise' | 'todo' | 'brand' | 'architecture' | 'cost';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('status');
@@ -26,6 +29,9 @@ export default function App() {
       case 'organizer': return 'Thought Organizer';
       case 'pairwise': return 'Pairwise Analysis';
       case 'todo': return 'To-Do List';
+      case 'brand': return 'Brand Guidelines';
+      case 'architecture': return 'System Architecture';
+      case 'cost': return 'Cost Tracker';
     }
   };
 
@@ -49,6 +55,15 @@ export default function App() {
           </button>
           <button className={`nav-link ${activeTab === 'workflow' ? 'active' : ''}`} onClick={() => setActiveTab('workflow')}>
             🗺 Workflow
+          </button>
+          <button className={`nav-link ${activeTab === 'brand' ? 'active' : ''}`} onClick={() => setActiveTab('brand')}>
+            🎨 Brand
+          </button>
+          <button className={`nav-link ${activeTab === 'architecture' ? 'active' : ''}`} onClick={() => setActiveTab('architecture')}>
+            🏗 Architecture
+          </button>
+          <button className={`nav-link ${activeTab === 'cost' ? 'active' : ''}`} onClick={() => setActiveTab('cost')}>
+            💰 Cost Tracker
           </button>
 
           <div className="nav-group-title">Thoughts</div>
@@ -82,6 +97,9 @@ export default function App() {
             {activeTab === 'organizer' && <OrganizerTab />}
             {activeTab === 'pairwise' && <PairwiseTab />}
             {activeTab === 'todo' && <ToDoTab />}
+            {activeTab === 'brand' && <BrandTab />}
+            {activeTab === 'architecture' && <ArchitectureTab />}
+            {activeTab === 'cost' && <CostTrackerTab />}
           </div>
         </div>
         <footer className="app-footer" style={{ borderTop: '1px solid var(--border-subtle)', padding: '1rem 2rem', color: 'var(--pmo-gold)', textAlign: 'center', fontSize: '0.85rem' }}>
