@@ -1,0 +1,91 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--ultra-dark-bg);
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: var(--bg-elevated);
+  border-bottom: 2px solid var(--pmo-gold);
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo-img {
+  height: 40px;
+  width: auto;
+}
+
+.wordmark {
+  font-family: Verdana, sans-serif;
+  font-weight: 700;
+  margin: 0;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wordmark-3 { color: var(--pmo-grey); }
+.wordmark-pmo { color: var(--pmo-green); }
+.wordmark-divider { color: var(--border-subtle); margin: 0 0.25rem; }
+.wordmark-app { color: var(--agy-lime); font-size: 1.25rem; font-weight: 400; }
+
+.app-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.tabs-nav {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 1rem;
+}
+
+.tab-btn {
+  background: transparent;
+  color: var(--pmo-grey);
+  border-radius: 4px;
+  padding: 0.5rem 1.5rem;
+  font-size: 1.1rem;
+}
+
+.tab-btn:hover {
+  background-color: var(--bg-card);
+  box-shadow: none;
+  transform: none;
+  color: var(--text-primary);
+}
+
+.tab-btn.active {
+  background-color: var(--pmo-green);
+  color: #000;
+}
+
+.tab-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tab-panel {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

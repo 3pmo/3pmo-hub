@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Verdana:wght@400;700&display=swap');
+
+:root {
+  /* 3PMO Dark Theme (Default) */
+  --ultra-dark-bg: #050606;
+  --pmo-green: #7CC170;
+  --pmo-gold: #FF9E1B;
+  --agy-lime: #c4ff61;
+  --pmo-grey: #7F8589;
+  --pmo-slate: #4A4A4A;
+  
+  --bg-elevated: #18181b;
+  --bg-card: #27272a;
+  --border-subtle: #3a3a3d;
+  
+  --text-primary: #ffffff;
+  --text-secondary: var(--pmo-grey);
+
+  font-family: Verdana, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: var(--text-primary);
+  background-color: var(--ultra-dark-bg);
+}
+
+.theme-printable {
+  /* Printable Light Theme */
+  --ultra-dark-bg: #ffffff;
+  --pmo-green: #3E701A; /* darker green for contrast */
+  --pmo-gold: #ED6335;  /* darker orange for contrast */
+  --pmo-grey: #767676;
+  --pmo-slate: #333333;
+  
+  --bg-elevated: #F3F3F3;
+  --bg-card: #FFFFFF;
+  --border-subtle: #D7D8D6;
+  
+  --text-primary: #000000;
+  --text-secondary: #333333;
+
+  color-scheme: light;
+  color: var(--text-primary);
+  background-color: var(--ultra-dark-bg);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+button {
+  background-color: var(--pmo-gold);
+  border: none;
+  border-radius: 999px;
+  color: #fff; /* gold text contrast */
+  padding: 0.5rem 1rem;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 158, 27, 0.4);
+}
+
+.theme-printable button {
+  color: var(--text-primary);
+}
+
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+h1, h2, h3 {
+  color: var(--pmo-green);
+  margin-top: 0;
+}
