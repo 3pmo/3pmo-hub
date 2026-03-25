@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { db, auth } from '../services/firebase';
 import { ref, push, onValue, off, set } from 'firebase/database';
 import type { DataSnapshot } from 'firebase/database';
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 
 interface PairwiseItem {
@@ -44,8 +44,6 @@ function getPairs(items: PairwiseItem[]) {
 
 export default function PairwiseTab() {
   const [user, setUser] = useState<User | null>(null);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [active, setActive] = useState<Analysis | null>(null);
@@ -79,8 +77,8 @@ export default function PairwiseTab() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    try { await signInWithEmailAndPassword(auth, email, password); }
-    catch { setAuthError('Login failed. Check credentials.'); }
+    try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+    catch (err: any) { setAuthError('Google Sign-In failed or was cancelled.'); }
   };
 
   const createAnalysis = async () => {
@@ -125,12 +123,8 @@ export default function PairwiseTab() {
         <div className="card" style={{ maxWidth: 360, margin: '4rem auto' }}>
           <h3>Sign In to Pairwise</h3>
           <form onSubmit={handleLogin} className="auth-form">
-            <input className="field-input" type="email" placeholder="Email" value={email}
-              onChange={e => setEmail(e.target.value)} required />
-            <input className="field-input" type="password" placeholder="Password" value={password}
-              onChange={e => setPassword(e.target.value)} required />
             {authError && <p className="error-msg">{authError}</p>}
-            <button type="submit" style={{ width: '100%' }}>Sign In</button>
+            <button type="submit" style={{ width: '100%' }}>Sign In with Google</button>
           </form>
         </div>
       </div>

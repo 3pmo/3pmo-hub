@@ -517,6 +517,18 @@
   .gd-contrib-box ul { list-style: none; padding: 0; margin: 6px 0 0 0; }
   .gd-contrib-box li { margin-bottom: 2px; }
   .gd-contrib-box li::before { content: '→ '; color: var(--accent-teal); }
+  /* PRINT STYLES */
+  @media print {
+    body { background: white !important; color: black !important; padding: 0 !important; min-width: auto; }
+    h1, .subtitle, .section-label, .tool-name, .sc-title, .wf-header { color: black !important; }
+    .tool-card, .session-card-section, .wf-col, .legend-section, .tn-card, .git-deploy-section {
+      background: white !important;
+      border: 1px solid #ccc !important;
+      break-inside: avoid;
+    }
+    .trigger-pill { border: 2px solid #ccc !important; color: black !important; }
+    .tool-card.full, .tool-card.cloud, .tool-card.manual-tier { border-top: 3px solid #ccc !important; }
+  }
 </style>
 </head>
 <body>

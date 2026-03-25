@@ -258,3 +258,4 @@ h2 { color: var(--pmo-gold); }
 .pw-result-fill { height: 100%; background: var(--pmo-gold); border-radius: 6px; }
 .pw-score { font-family: monospace; font-size: 0.9rem; color: var(--pmo-grey); width: 50px; text-align: right; }
 .project-meta-links { display: flex; gap: 8px; margin-bottom: 12px; } .path-copy-btn { background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-secondary); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; font-family: var(--font-base); } .path-copy-btn:hover { background: var(--bg-hover); color: var(--pmo-green); border-color: var(--pmo-green); }
+@media print { .sidebar, .header, .brand-area, .theme-toggle-btn, .app-footer, .nav-menu { display: none !important; } .main-content { margin-left: 0 !important; } .app-container { background: white !important; } .app-content-wrapper { padding: 0 !important; max-width: none !important; } }

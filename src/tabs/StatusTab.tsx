@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import projectsData from '../assets/projects.json';
-import syncMeta from '../assets/sync-meta.json';
 
 interface Project {
   name: string;
@@ -54,9 +53,6 @@ export default function StatusTab() {
     <div className="status-tab">
       <div className="tab-section-header">
         <p className="tab-section-desc">
-          <span className="sync-info" style={{ fontSize: '0.85rem', color: 'var(--pmo-gold)', marginTop: '8px', display: 'inline-block' }}>
-            Last synced: {new Date(syncMeta.last_sync).toLocaleString()}. To refresh, run <code>npm run build</code> locally, commit, and push.
-          </span>
         </p>
       </div>
 

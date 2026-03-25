@@ -5,6 +5,7 @@ import WorkflowTab from './tabs/WorkflowTab';
 import OrganizerTab from './tabs/OrganizerTab';
 import PairwiseTab from './tabs/PairwiseTab';
 import ToDoTab from './tabs/ToDoTab';
+import syncMeta from './assets/sync-meta.json';
 
 // Tabs match the old sub-tabs but are now all in the sidebar
 type Tab = 'status' | 'workflow' | 'organizer' | 'pairwise' | 'todo';
@@ -83,6 +84,9 @@ export default function App() {
             {activeTab === 'todo' && <ToDoTab />}
           </div>
         </div>
+        <footer className="app-footer" style={{ borderTop: '1px solid var(--border-subtle)', padding: '1rem 2rem', color: 'var(--pmo-gold)', textAlign: 'center', fontSize: '0.85rem' }}>
+          Last synced: {new Date(syncMeta.last_sync).toLocaleString()} · To refresh, run <code>npm run build</code> locally, commit, and push.
+        </footer>
       </main>
     </div>
   );

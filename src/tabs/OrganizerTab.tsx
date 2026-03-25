@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { db, auth } from '../services/firebase';
 import { ref, push, set, onValue, off, remove } from 'firebase/database';
 import type { DataSnapshot } from 'firebase/database';
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 
 type ThoughtStatus = 'Idea' | 'Started' | 'Published' | 'Finished';
@@ -39,8 +39,6 @@ const STATUS_ORDER: Record<ThoughtStatus, number> = { Idea: 0, Started: 1, Publi
 
 export default function OrganizerTab() {
   const [user, setUser] = useState<User | null>(null);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [thoughts, setThoughts] = useState<Thought[]>([]);
   const [filterCat, setFilterCat] = useState<string>('All');
@@ -76,8 +74,8 @@ export default function OrganizerTab() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    try { await signInWithEmailAndPassword(auth, email, password); }
-    catch (err: any) { setAuthError('Login failed. Check credentials.'); }
+    try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+    catch (err: any) { setAuthError('Google Sign-In failed or was cancelled.'); }
   };
 
   const startListening = () => {
@@ -138,12 +136,8 @@ export default function OrganizerTab() {
         <div className="card" style={{ maxWidth: 360, margin: '4rem auto' }}>
           <h3>Sign In to Organizer</h3>
           <form onSubmit={handleLogin} className="auth-form">
-            <input className="field-input" type="email" placeholder="Email" value={email}
-              onChange={e => setEmail(e.target.value)} required />
-            <input className="field-input" type="password" placeholder="Password" value={password}
-              onChange={e => setPassword(e.target.value)} required />
             {authError && <p className="error-msg">{authError}</p>}
-            <button type="submit" style={{ width: '100%' }}>Sign In</button>
+            <button type="submit" style={{ width: '100%' }}>Sign In with Google</button>
           </form>
         </div>
       </div>
