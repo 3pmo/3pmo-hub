@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import projectsData from '../assets/projects.json';
+import syncMeta from '../assets/sync-meta.json';
 
 interface Project {
   name: string;
@@ -56,6 +57,10 @@ export default function StatusTab() {
         <p className="tab-section-desc">
           All active and standing projects — synced from <code>project-registry.md</code>.
           {' '}{projects.length} projects loaded.
+          <br/>
+          <span className="sync-info" style={{ fontSize: '0.85rem', color: 'var(--pmo-gold)', marginTop: '8px', display: 'inline-block' }}>
+            Last synced: {new Date(syncMeta.last_sync).toLocaleString()}. To refresh, run <code>npm run build</code> locally, commit, and push.
+          </span>
         </p>
       </div>
 
@@ -106,9 +111,15 @@ export default function StatusTab() {
               
               <div className="project-meta-links">
                 {p.drive && (
-                  <button className="path-copy-btn" onClick={() => handleCopy(p.drive!, 'Drive')} title={p.drive}>
-                    ☁ Copy Drive Path
-                  </button>
+                  p.drive.startsWith('http') ? (
+                    <a href={p.drive} target="_blank" rel="noreferrer" className="path-copy-btn" title="Open in Google Drive" style={{textDecoration: 'none'}}>
+                      ☁ Open Drive Folder
+                    </a>
+                  ) : (
+                    <button className="path-copy-btn" onClick={() => handleCopy(p.drive!, 'Drive')} title={p.drive}>
+                      ☁ Copy Drive Path
+                    </button>
+                  )
                 )}
                 {p.local && p.local.includes('C:') && (
                   <button className="path-copy-btn" onClick={() => handleCopy(p.local!, 'Local')} title={p.local}>

@@ -47,6 +47,12 @@ try {
   const dir = path.dirname(OUTPUT_PATH);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(projects, null, 2));
+
+  const metaPath = path.join(__dirname, '../src/assets/sync-meta.json');
+  fs.writeFileSync(metaPath, JSON.stringify({
+    last_sync: new Date().toISOString()
+  }, null, 2));
+
   console.log(`✅ Successfully synced ${projects.length} active/standing/tab projects to src/assets/projects.json`);
 } catch (e) {
   if (e.code === 'ENOENT') {
