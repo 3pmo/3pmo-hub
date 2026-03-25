@@ -8,6 +8,11 @@ const __dirname = path.dirname(__filename);
 const REGISTRY_PATH = 'C:/Users/willl/My Drive/AI/_System/project-registry.md';
 const OUTPUT_PATH = path.join(__dirname, '../src/assets/projects.json');
 
+if (process.env.CI) {
+  console.log('CI environment detected — skipping registry sync (using existing src/assets/projects.json)');
+  process.exit(0);
+}
+
 console.log('Syncing project registry...');
 
 try {

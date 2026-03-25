@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * migrate_db.js — One-off migration script
  *
@@ -7,20 +6,16 @@
  *
  * SAFE TO RUN MULTIPLE TIMES — uses set() not push(), so it is idempotent.
  * The old DB is READ-ONLY in this script — nothing is deleted or modified.
- *
- * Prerequisites:
- *   1. Two service account JSON key files (one per project):
- *      - scripts/sa-thought-organizer.json  (source — read only)
- *      - scripts/sa-hub-3pmo.json           (destination — read/write)
- *      Download from Firebase Console → Project Settings → Service Accounts → Generate new private key
- *   2. npm install firebase-admin  (run once in /scripts or root)
- *
- * Usage:
- *   node scripts/migrate_db.js
  */
 
-const admin = require('firebase-admin');
-const path = require('path');
+import admin from 'firebase-admin';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const require = createRequire(import.meta.url);
 
 // ── Source (old project — READ ONLY) ──────────────────────────────────────────
 const sourceCred = require(path.join(__dirname, 'sa-thought-organizer.json'));
