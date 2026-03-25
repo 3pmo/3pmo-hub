@@ -26,7 +26,7 @@
     "name": "hub-webapp",
     "status": "Active (Deployed)",
     "created": "2026-02-08",
-    "last_active": "2026-03-15",
+    "last_active": "2026-03-24",
     "current_ai": "AntiGravity",
     "drive": "C:\\Users\\willl\\My Drive\\AI\\Projects\\hub-webapp\\",
     "local": "C:\\Users\\willl\\Projects\\hub-webapp\\",
@@ -39,8 +39,8 @@
     "name": "improve-brand",
     "status": "Active",
     "created": "2026-03-07",
-    "last_active": "2026-03-14",
-    "current_ai": "GeminiCLI",
+    "last_active": "2026-03-24",
+    "current_ai": "AntiGravity",
     "drive": "C:\\Users\\willl\\My Drive\\AI\\Projects\\improve-brand\\",
     "backlog": "ðŸ› 0 Bugs | ðŸš€ 1 Enhancements",
     "description": "Provides a brand-specific improvements project to ensure all _system workflow files are appropriately updated as and when the brand is improved."
@@ -70,12 +70,12 @@
     "name": "system-cleanup",
     "status": "Active",
     "created": "2026-03-02",
-    "last_active": "2026-03-08",
-    "current_ai": "GeminiCLI",
+    "last_active": "2026-03-23",
+    "current_ai": "ClaudeCowork",
     "drive": "C:\\Users\\willl\\My Drive\\AI\\Projects\\system-cleanup\\",
     "local": "C:\\Users\\willl\\Projects\\system-cleanup\\",
-    "backlog": "ðŸ› 2 Bugs | ðŸš€ 6 Enhancements",
-    "description": "Multi-phase cleanup of Windows PC environment â€” removing legacy storage, migrating to Google Drive, and reclaiming disk space."
+    "backlog": "🐛 1 Bug (parked) | 🚀 3 Enhancements open",
+    "description": "Multi-phase cleanup of Windows PC environment — removing legacy storage, migrating to Google Drive, reclaiming disk space, and consolidating Drive root."
   },
   {
     "name": "uae-director",
