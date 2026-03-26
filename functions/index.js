@@ -137,7 +137,13 @@ exports.fetchClaudeUsage = onCall(
             limits: { daily_input: 700000, daily_output: 300000 }
         };
 
+        // Write snapshot (current state — overwritten each refresh)
         await admin.database().ref("hub_status/token_usage/claude").set(usageData);
+
+        // Write to time-series (keyed by date — accumulates historical data for chart)
+        await admin.database()
+            .ref(`hub_cost_tracker/daily/claude/${usageData.date}`)
+            .set(usageData);
 
         return { success: true, data: usageData };
     }
