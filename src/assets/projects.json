@@ -16,7 +16,7 @@
     "created": "2026-02-23",
     "last_active": "2026-03-18",
     "current_ai": "GeminiCLI",
-    "drive": "C:\\Users\\willl\\My Drive\\AI\\Projects\\improve-workflow\\",
+    "drive": "https://drive.google.com/drive/folders/1lqnf5RfvAz1pMZd0ZR1ER8GjRwo-pM4z",
     "backlog": "🛠 0 Bugs | 🚀 7 Enhancements",
     "report_tab": "Workflow Diagram (`hub-webapp` Status â†’ Workflow tab · master: `improve-workflow/03-artifacts/workflow-diagram.html`)",
     "deploy": "Indirect — copy `workflow-diagram.html` to hub-webapp `public/`, then push hub-webapp to trigger GitHub Actions deploy",
@@ -41,7 +41,7 @@
     "created": "2026-03-07",
     "last_active": "2026-03-25",
     "current_ai": "AntiGravity",
-    "drive": "C:\\Users\\willl\\My Drive\\AI\\Projects\\improve-brand\\",
+    "drive": "https://drive.google.com/drive/folders/1rczPizxc1_EojMOeeYUq0j3RWCKCRfYR",
     "backlog": "🐛 0 Bugs | 🚀 1 Enhancements",
     "description": "Provides a brand-specific improvements project to ensure all _system workflow files are appropriately updated as and when the brand is improved."
   },
@@ -51,7 +51,7 @@
     "created": "2026-03-06",
     "last_active": "2026-03-07",
     "current_ai": "ClaudeCowork",
-    "drive": "C:\\Users\\willl\\My Drive\\AI\\Projects\\legacy\\",
+    "drive": "https://drive.google.com/drive/folders/1o3poX_kdOxeb0cZNLFCN0HBVSHs2n94U",
     "backlog": "🐛 2 Bugs | 🚀 4 Enhancements",
     "description": "Portfolio Intelligence curriculum and thought leadership content creation. Docs-only project hosted on 3pmo.com."
   },
@@ -61,7 +61,7 @@
     "created": "2026-02-06",
     "last_active": "2026-03-07",
     "current_ai": "ClaudeCowork",
-    "drive": "C:\\Users\\willl\\My Drive\\AI\\Projects\\m4p-model\\",
+    "drive": "https://drive.google.com/drive/folders/1MRijHsWt7azZ9f3mTGUQ5ePml_qxQDhT",
     "local": "C:\\Users\\willl\\Projects\\m4p-model\\",
     "backlog": "🐛 1 Bugs | 🚀 2 Enhancements",
     "description": "Standalone docs and code project to produce an executive capability model representing the integrated ecosystem of SPM, PPM, Value Streams, and Agile-at-Scale execution."
