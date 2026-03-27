@@ -105,7 +105,7 @@ export default function StatusTab() {
               <div className="project-meta-links">
                 {p.drive && (
                   p.drive.startsWith('http') ? (
-                    <a href={p.drive} target="_blank" rel="noreferrer" className="path-copy-btn" title="Open in Google Drive" style={{textDecoration: 'none'}}>
+                    <a href={p.drive} target="_blank" rel="noreferrer" className="meta-link" title="Open in Google Drive" style={{textDecoration: 'none'}}>
                       Drive
                     </a>
                   ) : (
