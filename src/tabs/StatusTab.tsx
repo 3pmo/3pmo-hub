@@ -103,12 +103,7 @@ export default function StatusTab() {
               {p.description && <p className="project-desc">{p.description}</p>}
               
               <div className="project-meta-links">
-                {p.drive && (
-                  p.drive.startsWith('http') ? (
-                    <a href={p.drive} target="_blank" rel="noreferrer" className="meta-link" title="Open in Google Drive" style={{textDecoration: 'none'}}>
-                      Drive
-                    </a>
-                  ) : (
+                                  ) : (
                     <button className="path-copy-btn" onClick={() => handleCopy(p.drive!, 'Drive')} title={p.drive}>
                       ☁ Copy Drive Path
                     </button>
@@ -119,7 +114,8 @@ export default function StatusTab() {
               <div className="project-meta">
                 {p.last_active && <span>🕐 {formatDate(p.last_active)}</span>}
                 {p.current_ai && <span>🤖 {p.current_ai}</span>}
-                {p.github && (
+                {p.drive?.startsWith('http') && (<a className="meta-link" href={p.drive} target="_blank">☁ Drive</a>)}
+              {p.github && (
                   <a href={`https://github.com/${p.github.replace(/`/g,'')}`} target="_blank" rel="noreferrer"
                     className="meta-link">⎇ GitHub</a>
                 )}
