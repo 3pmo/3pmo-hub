@@ -106,7 +106,7 @@ export default function StatusTab() {
                 {p.drive && (
                   p.drive.startsWith('http') ? (
                     <a href={p.drive} target="_blank" rel="noreferrer" className="path-copy-btn" title="Open in Google Drive" style={{textDecoration: 'none'}}>
-                      ☁ Open Drive Folder
+                      Drive
                     </a>
                   ) : (
                     <button className="path-copy-btn" onClick={() => handleCopy(p.drive!, 'Drive')} title={p.drive}>
@@ -114,18 +114,13 @@ export default function StatusTab() {
                     </button>
                   )
                 )}
-                {p.local && p.local.includes('C:') && (
-                  <button className="path-copy-btn" onClick={() => handleCopy(p.local!, 'Local')} title={p.local}>
-                    💻 Copy Local Path
-                  </button>
-                )}
               </div>
 
               <div className="project-meta">
                 {p.last_active && <span>🕐 {formatDate(p.last_active)}</span>}
                 {p.current_ai && <span>🤖 {p.current_ai}</span>}
                 {p.github && (
-                  <a href={`https://github.com/3pmo/${p.github.replace(/`/g,'')}`} target="_blank" rel="noreferrer"
+                  <a href={`https://github.com/${p.github.replace(/`/g,'')}`} target="_blank" rel="noreferrer"
                     className="meta-link">⎇ GitHub</a>
                 )}
               </div>
