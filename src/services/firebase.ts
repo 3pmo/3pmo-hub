@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 // hub-3pmo — canonical project (migrated 2026-03-24)
 // ROLLBACK: revert to thought-organizer-79aff config below if needed
@@ -16,6 +17,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const db = getDatabase(app);
-export const auth = getAuth(app);
+export const db         = getDatabase(app);
+export const firestore  = getFirestore(app);
+export const auth       = getAuth(app);
 export default app;
