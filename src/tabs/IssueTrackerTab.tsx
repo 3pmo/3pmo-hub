@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { firestore } from '../services/firebase';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { formatDate } from '../utils/formatDate';
+import projects from '../assets/projects.json';
 
 export interface Issue {
   id: string;
@@ -33,6 +34,21 @@ export default function IssueTrackerTab() {
   // Sort
   const [sortField, setSortField] = useState<'priority' | 'project_slug' | 'updated_at'>('priority');
   const [sortAsc, setSortAsc] = useState(true);
+
+  // Form / Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingIssue, setEditingIssue] = useState<Issue | null>(null);
+  const [formData, setFormData] = useState<Partial<Issue>>({
+    title: '',
+    description: '',
+    project_slug: 'improve-workflow',
+    type: 'enhancement',
+    priority: 'P2',
+    status: 'New',
+    test_unit: '⬜',
+    test_sit: '⬜',
+    test_uat: '⬜'
+  });
 
   useEffect(() => {
     const q = query(collection(firestore, 'issues'), orderBy('created_at', 'desc'));
@@ -79,9 +95,58 @@ export default function IssueTrackerTab() {
   // Unique projects for dropdown
   const uniqueProjects = Array.from(new Set(issues.map(i => i.project_slug))).sort();
 
+  const handleLogIssue = () => {
+    setEditingIssue(null);
+    setFormData({
+      title: '',
+      description: '',
+      project_slug: projects[0]?.name || '3pmo-hub',
+      type: 'enhancement',
+      priority: 'P2',
+      status: 'New',
+      test_unit: '⬜',
+      test_sit: '⬜',
+      test_uat: '⬜'
+    });
+    setIsModalOpen(true);
+  };
+
   const handleRowClick = (issue: Issue) => {
-    console.log("Edit issue clicked via row:", issue.id);
-    // TODO: Stream C - open edit form
+    setEditingIssue(issue);
+    setFormData({ ...issue });
+    setIsModalOpen(true);
+  };
+
+  const handleTestCycle = (field: 'test_unit' | 'test_sit' | 'test_uat') => {
+    const cycle: Record<string, '⬜' | '✅' | 'N/A'> = { '⬜': '✅', '✅': 'N/A', 'N/A': '⬜' };
+    setFormData(prev => ({ ...prev, [field]: cycle[prev[field] || '⬜'] }));
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const data = {
+      ...formData,
+      updated_at: serverTimestamp(),
+      updated_by: 'user' // Should ideally pull from auth
+    };
+
+    try {
+      if (editingIssue) {
+        const docRef = doc(firestore, 'issues', editingIssue.id);
+        await updateDoc(docRef, data as any);
+      } else {
+        await addDoc(collection(firestore, 'issues'), {
+          ...data,
+          created_at: serverTimestamp(),
+          created_by: 'user',
+          logged_date: new Date().toISOString().split('T')[0]
+        });
+      }
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error("Error saving issue:", err);
+      alert("Failed to save issue.");
+    }
   };
 
   const getStatusClass = (status: string) => {
@@ -99,7 +164,7 @@ export default function IssueTrackerTab() {
         <p className="tab-section-desc">
           Centralized tracking of all bugs and enhancements across projects.
         </p>
-        <button className="btn-primary" onClick={() => console.log('Create new issue')} style={{ minWidth: '150px' }}>
+        <button className="btn-primary" onClick={handleLogIssue} style={{ minWidth: '150px' }}>
           ＋ Log Issue
         </button>
       </div>
@@ -204,6 +269,116 @@ export default function IssueTrackerTab() {
           </tbody>
         </table>
       </div>
+
+      {/* ── Issue Modal ── */}
+      {isModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="modal-card" style={{ maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ margin: 0 }}>{editingIssue ? 'Edit Issue' : 'Log New Issue'}</h3>
+              <button className="cancel-btn" onClick={() => setIsModalOpen(false)} style={{ fontSize: '1.2rem' }}>✕</button>
+            </div>
+
+            <form onSubmit={handleSave} className="capture-form">
+              <div className="form-row">
+                <div style={{ flex: 2 }}>
+                  <label className="slider-label">Project</label>
+                  <select 
+                    className="field-select" 
+                    value={formData.project_slug} 
+                    onChange={e => setFormData(f => ({ ...f, project_slug: e.target.value }))}
+                    required
+                  >
+                    {projects.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+                  </select>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label className="slider-label">Type</label>
+                  <select 
+                    className="field-select" 
+                    value={formData.type} 
+                    onChange={e => setFormData(f => ({ ...f, type: e.target.value as any }))}
+                  >
+                    <option value="bug">Bug</option>
+                    <option value="enhancement">Enhancement</option>
+                  </select>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label className="slider-label">Priority</label>
+                  <select 
+                    className="field-select" 
+                    value={formData.priority} 
+                    onChange={e => setFormData(f => ({ ...f, priority: e.target.value as any }))}
+                  >
+                    {['P0', 'P1', 'P2', 'P3', 'P4'].map(p => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="slider-label">Title</label>
+                <input 
+                  className="field-input" 
+                  value={formData.title} 
+                  onChange={e => setFormData(f => ({ ...f, title: e.target.value }))}
+                  placeholder="Summarize the issue..."
+                  required 
+                />
+              </div>
+
+              <div>
+                <label className="slider-label">Description</label>
+                <textarea 
+                  className="field-input" 
+                  rows={4} 
+                  value={formData.description} 
+                  onChange={e => setFormData(f => ({ ...f, description: e.target.value }))}
+                  placeholder="More context, expected behavior, logs..."
+                />
+              </div>
+
+              <div className="form-row" style={{ alignItems: 'flex-end' }}>
+                <div style={{ flex: 2 }}>
+                  <label className="slider-label">Status</label>
+                  <select 
+                    className="field-select" 
+                    value={formData.status} 
+                    onChange={e => setFormData(f => ({ ...f, status: e.target.value as any }))}
+                  >
+                    {['New', 'Open', 'In Progress', 'In Review', 'Done', 'Parked', 'Closed'].map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ flex: 3, display: 'flex', gap: '8px', justifyContent: 'flex-end', paddingBottom: '4px' }}>
+                  {(['test_unit', 'test_sit', 'test_uat'] as const).map(test => (
+                    <div key={test} style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'var(--pmo-slate)', marginBottom: '4px' }}>
+                        {test.split('_')[1]}
+                      </div>
+                      <button 
+                        type="button" 
+                        className="icon-btn" 
+                        onClick={() => handleTestCycle(test)}
+                        style={{ fontSize: '1.2rem', padding: '0.4rem 0.8rem', width: '45px' }}
+                      >
+                        {formData[test]}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="cancel-btn" onClick={() => setIsModalOpen(false)}>Cancel</button>
+                <button type="submit" className="btn-primary" style={{ padding: '0.6rem 2rem' }}>
+                  {editingIssue ? 'Update Issue' : 'Log Issue'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
