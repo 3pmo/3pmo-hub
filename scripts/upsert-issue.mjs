@@ -1,18 +1,16 @@
 /**
- * upsert-project.mjs
- * Add or update a single project document in Firestore (hub-3pmo / projects).
- * Called by AI tools (via user running from Windows terminal) when creating or
- * updating a project entry — replaces the old project-registry.md write pattern.
+ * upsert-issue.mjs
+ * Add or update a single issue document in Firestore (hub-3pmo / issues).
  *
  * Usage:
- *   node scripts/upsert-project.mjs --file=./project-data.json
+ *   node scripts/upsert-issue.mjs --file=./issue-data.json
  *
- * The JSON file should contain any subset of the project schema fields.
- * Required: slug  (used as the Firestore document ID)
- * All other fields are merged — existing fields not in the JSON are preserved.
+ * The JSON file should contain issue schema fields.
+ * Optional: id (Firestore document ID). If provided, it merges. If not, it creates a new document.
+ * Required if creating: project_slug, type, title.
  *
  * Service account: scripts/sa-hub-3pmo.json
- * Firestore project: hub-3pmo  |  Collection: projects
+ * Firestore project: hub-3pmo  |  Collection: issues
  */
 
 import admin from 'firebase-admin';
@@ -33,7 +31,7 @@ const fileArg = args.find(a => a.startsWith('--file='));
 const filePath = fileArg ? fileArg.split('=').slice(1).join('=') : null;
 
 if (!filePath) {
-  console.error('Usage: node scripts/upsert-project.mjs --file=./project-data.json');
+  console.error('Usage: node scripts/upsert-issue.mjs --file=./issue-data.json');
   process.exit(1);
 }
 
@@ -44,14 +42,16 @@ if (!fs.existsSync(resolvedPath)) {
 }
 
 // ── Load data ────────────────────────────────────────────────────────────────
-const projectData = JSON.parse(fs.readFileSync(resolvedPath, 'utf-8'));
+const issueData = JSON.parse(fs.readFileSync(resolvedPath, 'utf-8'));
 
-if (!projectData.slug) {
-  console.error('Error: project data must include a "slug" field (used as Firestore document ID)');
-  process.exit(1);
+const { id, ...fields } = issueData;
+
+if (!id) {
+  if (!fields.project_slug || !fields.type || !fields.title) {
+    console.error('Error: new issues must include project_slug, type, and title');
+    process.exit(1);
+  }
 }
-
-const { slug, ...fields } = projectData;
 
 // ── Connect ──────────────────────────────────────────────────────────────────
 if (!fs.existsSync(SA_PATH)) {
@@ -78,7 +78,7 @@ const toTimestamp = (value) => {
 };
 
 // Convert any date string fields to Timestamps
-const dateFields = ['created_at', 'last_active', 'updated_at'];
+const dateFields = ['created_at', 'updated_at'];
 const processed = { ...fields, updated_at: now };
 
 for (const f of dateFields) {
@@ -87,24 +87,38 @@ for (const f of dateFields) {
   }
 }
 
-// Set created_at only if creating new (merge won't overwrite existing)
-// We check this by doing a get first if created_at not supplied
-if (!processed.created_at) {
-  const existing = await firestore.collection('projects').doc(slug).get();
-  if (!existing.exists) {
-    processed.created_at = now;
-    console.log(`  → New document — setting created_at to now`);
+let docRef;
+
+if (id) {
+  docRef = firestore.collection('issues').doc(id);
+  // Do a get first to verify it exists if we aren't creating it from scratch
+  const existing = await docRef.get();
+  if (!existing.exists && !processed.created_at) {
+     processed.created_at = now;
+     console.log(`  → New document (provided ID) — setting created_at to now`);
   }
+} else {
+  docRef = firestore.collection('issues').doc();
+  processed.created_at = processed.created_at || now;
+  console.log(`  → New document (auto-generated ID: ${docRef.id})`);
+}
+
+// Provide sensible defaults for a new issue if not passed
+if (!id || processed.created_at === now) {
+  if (!processed.status) processed.status = 'New';
+  if (!processed.priority) processed.priority = 'P2';
+  if (!processed.test_unit) processed.test_unit = '⬜';
+  if (!processed.test_sit) processed.test_sit = '⬜';
+  if (!processed.test_uat) processed.test_uat = '⬜';
 }
 
 // ── Write ────────────────────────────────────────────────────────────────────
-console.log(`\nUpserting project: ${slug}`);
+console.log(`\nUpserting issue: ${docRef.id}`);
 console.log('Fields:', JSON.stringify(
-  { ...processed, updated_at: '(now)', created_at: processed.created_at ? '(timestamp)' : '(existing)' },
+  { ...processed, updated_at: '(now)', created_at: processed.created_at === now ? '(now)' : '(existing/timestamp)' },
   null, 2
 ));
 
-await firestore.collection('projects').doc(slug).set(processed, { merge: true });
+await docRef.set(processed, { merge: true });
 
-console.log(`\n✅ Project "${slug}" written to Firestore hub-3pmo/projects`);
-console.log('\nNext: run  node scripts/sync-registry.mjs  then commit + push to update the status page.');
+console.log(`\n✅ Issue "${docRef.id}" written to Firestore hub-3pmo/issues`);

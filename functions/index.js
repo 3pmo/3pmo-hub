@@ -149,3 +149,54 @@ exports.fetchClaudeUsage = onCall(
         return { success: true, data: usageData };
     }
 );
+
+// ── ISSUE TRACKER ────────────────────────────────────────────────────────────
+const { onDocumentWritten } = require("firebase-functions/v2/firestore");
+
+/**
+ * Triggered on any write to the /issues collection.
+ * Recomputes the total number of open bugs and enhancements for the parent project.
+ */
+exports.onIssueWrite = onDocumentWritten("issues/{issueId}", async (event) => {
+    const beforeData = event.data?.before?.data();
+    const afterData = event.data?.after?.data();
+
+    // Identify which project(s) to update. Usually it's just one.
+    // If an issue was moved to another project, we should update both, 
+    // but moving projects is rare. For safety, we recount both if they differ.
+    const projectsToUpdate = new Set();
+    if (beforeData?.project_slug) projectsToUpdate.add(beforeData.project_slug);
+    if (afterData?.project_slug) projectsToUpdate.add(afterData.project_slug);
+
+    if (projectsToUpdate.size === 0) return null;
+
+    const db = admin.firestore();
+
+    const updates = Array.from(projectsToUpdate).map(async (projectSlug) => {
+        const querySnapshot = await db.collection("issues").where("project_slug", "==", projectSlug).get();
+        let bugs = 0;
+        let enhancements = 0;
+
+        querySnapshot.forEach(doc => {
+            const d = doc.data();
+            // Done, Closed, and Parked mean the issue is resolved/archived
+            if (["Done", "Closed", "Parked"].includes(d.status)) return;
+
+            if (d.type === "bug") bugs++;
+            if (d.type === "enhancement") enhancements++;
+        });
+
+        console.log(`Updating counts for project ${projectSlug} -> Bugs: ${bugs}, Enhancements: ${enhancements}`);
+        // Only update if the project exists to avoid errors on deleted projects
+        const projRef = db.collection("projects").doc(projectSlug);
+        const projDoc = await projRef.get();
+        if (projDoc.exists) {
+            return projRef.update({
+                backlog_bugs: bugs,
+                backlog_enhancements: enhancements
+            });
+        }
+    });
+
+    return Promise.all(updates);
+});

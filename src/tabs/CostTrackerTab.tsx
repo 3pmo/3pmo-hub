@@ -595,13 +595,13 @@ export default function CostTrackerTab() {
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis
                 dataKey="date"
-                tickFormatter={(v) => formatDate(v)}
+                tickFormatter={(v: any) => formatDate(v)}
                 tick={{ fill: 'var(--pmo-slate)', fontSize: 11, fontFamily: 'Verdana, sans-serif' }}
                 axisLine={{ stroke: 'var(--border-subtle)' }}
                 tickLine={false}
               />
               <YAxis
-                tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)}
+                tickFormatter={(v: any) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)}
                 tick={{ fill: 'var(--pmo-slate)', fontSize: 11, fontFamily: 'Verdana, sans-serif' }}
                 axisLine={{ stroke: 'var(--border-subtle)' }}
                 tickLine={false}
