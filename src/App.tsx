@@ -9,10 +9,11 @@ import ToDoTab from './tabs/ToDoTab';
 import BrandTab from './tabs/BrandTab';
 import ArchitectureTab from './tabs/ArchitectureTab';
 import CostTrackerTab from './tabs/CostTrackerTab';
+import IssueTrackerTab from './tabs/IssueTrackerTab';
 import syncMeta from './assets/sync-meta.json';
 
 // Tabs match the old sub-tabs but are now all in the sidebar
-type Tab = 'status' | 'workflow' | 'organizer' | 'pairwise' | 'todo' | 'brand' | 'architecture' | 'cost';
+type Tab = 'status' | 'workflow' | 'organizer' | 'pairwise' | 'todo' | 'brand' | 'architecture' | 'cost' | 'issues';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('status');
@@ -34,6 +35,7 @@ export default function App() {
       case 'brand': return 'Brand Guidelines';
       case 'architecture': return 'System Architecture';
       case 'cost': return 'Cost Tracker';
+      case 'issues': return 'Issue Tracker';
     }
   };
 
@@ -78,6 +80,9 @@ export default function App() {
           <button className={`nav-link ${activeTab === 'todo' ? 'active' : ''}`} onClick={() => setActiveTab('todo')}>
             ✅ To-Do
           </button>
+          <button className={`nav-link ${activeTab === 'issues' ? 'active' : ''}`} onClick={() => setActiveTab('issues')}>
+            🎯 Issue Tracker
+          </button>
         </nav>
       </aside>
       <div className={`sidebar-overlay${sidebarOpen ? ' visible' : ''}`} onClick={() => setSidebarOpen(false)} />
@@ -104,6 +109,7 @@ export default function App() {
             {activeTab === 'brand' && <BrandTab />}
             {activeTab === 'architecture' && <ArchitectureTab />}
             {activeTab === 'cost' && <CostTrackerTab />}
+            {activeTab === 'issues' && <IssueTrackerTab />}
           </div>
         </div>
         <footer className="app-footer" style={{ borderTop: '1px solid var(--border-subtle)', padding: '1rem 2rem', color: 'var(--pmo-gold)', textAlign: 'center', fontSize: '0.85rem' }}>
