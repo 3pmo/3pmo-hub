@@ -11,11 +11,13 @@ export interface Issue {
   priority: 'P0' | 'P1' | 'P2' | 'P3' | 'P4';
   title: string;
   description: string;
-  status: 'New' | 'Open' | 'In Progress' | 'In Review' | 'Done' | 'Parked' | 'Closed';
+  status: 'Open' | 'In Progress' | 'UAT' | 'Done' | 'Parked';
   logged_date: string;
-  test_unit: '⬜' | '✅' | 'N/A';
+  test_compile: '⬜' | '✅' | 'N/A';
+  test_dod: '⬜' | '✅' | 'N/A';
   test_sit: '⬜' | '✅' | 'N/A';
   test_uat: '⬜' | '✅' | 'N/A';
+  dod_items?: { task: string; completed: boolean }[];
   created_at?: any;
   created_by?: string;
   updated_at?: any;
@@ -45,9 +47,11 @@ export default function IssueTrackerTab() {
     type: 'enhancement',
     priority: 'P4',
     status: 'Open',
-    test_unit: '⬜',
+    test_compile: '⬜',
+    test_dod: '⬜',
     test_sit: '⬜',
-    test_uat: '⬜'
+    test_uat: '⬜',
+    dod_items: []
   });
 
   useEffect(() => {
@@ -107,13 +111,15 @@ export default function IssueTrackerTab() {
     setFormData({
       title: '',
       description: '',
-      project_slug: '',      // E2: null — user must select
+      project_slug: '',
       type: 'enhancement',
-      priority: 'P4',        // E2: default P4
-      status: 'Open',        // E2: default Open
-      test_unit: '⬜',
+      priority: 'P4',
+      status: 'Open',
+      test_compile: '⬜',
+      test_dod: '⬜',
       test_sit: '⬜',
-      test_uat: '⬜'
+      test_uat: '⬜',
+      dod_items: []
     });
     setIsModalOpen(true);
   };
@@ -124,9 +130,41 @@ export default function IssueTrackerTab() {
     setIsModalOpen(true);
   };
 
-  const handleTestCycle = (field: 'test_unit' | 'test_sit' | 'test_uat') => {
+  const handleTestCycle = (field: 'test_compile' | 'test_dod' | 'test_sit' | 'test_uat') => {
     const cycle: Record<string, '⬜' | '✅' | 'N/A'> = { '⬜': '✅', '✅': 'N/A', 'N/A': '⬜' };
-    setFormData(prev => ({ ...prev, [field]: cycle[prev[field] || '⬜'] }));
+    const newValue = cycle[formData[field] || '⬜'];
+    
+    setFormData(prev => {
+      const updated = { ...prev, [field]: newValue };
+      
+      // Auto-transition logic
+      if (field === 'test_compile' && newValue === '✅' && prev.status === 'Open') {
+        updated.status = 'In Progress';
+      }
+      if (field === 'test_sit' && newValue === '✅' && prev.status === 'In Progress') {
+        updated.status = 'UAT';
+      }
+      
+      return updated;
+    });
+  };
+
+  const handleToggleDoD = (index: number) => {
+    setFormData(prev => {
+      const newItems = [...(prev.dod_items || [])];
+      newItems[index] = { ...newItems[index], completed: !newItems[index].completed };
+      return { ...prev, dod_items: newItems };
+    });
+  };
+
+  const handleAddDoD = () => {
+    const task = prompt("Enter DoD task:");
+    if (task) {
+      setFormData(prev => ({
+        ...prev,
+        dod_items: [...(prev.dod_items || []), { task, completed: false }]
+      }));
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -157,9 +195,10 @@ export default function IssueTrackerTab() {
   };
 
   const getStatusClass = (status: string) => {
-    if (['Closed', 'Done'].includes(status)) return 'success';
-    if (['New', 'Parked'].includes(status)) return 'inactive';
-    if (['In Progress', 'In Review'].includes(status)) return 'warning';
+    if (status === 'Done') return 'success';
+    if (status === 'Parked') return 'inactive';
+    if (status === 'In Progress') return 'warning';
+    if (status === 'UAT') return 'warning';
     return 'danger';
   };
 
@@ -275,62 +314,82 @@ export default function IssueTrackerTab() {
         </div>
       </div>
 
-      <div className="table-responsive">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th style={{ width: '80px' }}>ID</th>
-              <th style={{ width: '120px' }}>Project</th>
-              <th style={{ width: '80px' }}>Type</th>
-              <th style={{ width: '80px' }}>Pri</th>
-              <th>Title</th>
-              <th style={{ width: '100px' }}>Status</th>
-              <th style={{ width: '120px' }}>Tests (U/S/A)</th>
-              <th style={{ width: '100px' }}>Updated</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedIssues.length === 0 ? (
-              <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: '2rem', color: 'var(--pmo-slate)' }}>
-                  No issues match the current filters.
-                </td>
-              </tr>
-            ) : sortedIssues.map(issue => (
-              <tr key={issue.id} onClick={() => handleRowClick(issue)} style={{ cursor: 'pointer' }} className="clickable-row">
-                <td style={{ fontFamily: 'monospace', color: 'var(--pmo-slate)' }}>{issue.id.substring(0,6)}</td>
-                <td style={{ color: 'var(--pmo-gold)', fontWeight: 'bold' }}>{issue.project_slug}</td>
-                <td>
-                  <span className={`status-badge ${issue.type === 'bug' ? 'danger' : 'success'}`} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}>
+      <div className="issue-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {sortedIssues.length === 0 ? (
+          <div className="card" style={{ textAlign: 'center', padding: '3rem', color: 'var(--pmo-slate)' }}>
+            No issues match the current filters.
+          </div>
+        ) : sortedIssues.map(issue => (
+          <div 
+            key={issue.id} 
+            onClick={() => handleRowClick(issue)} 
+            className="card clickable-row" 
+            style={{ 
+              padding: '1.25rem', 
+              cursor: 'pointer',
+              borderLeft: `4px solid ${
+                issue.priority === 'P0' ? '#ff4757' : 
+                issue.priority === 'P1' ? 'var(--pmo-gold)' : 
+                'var(--border-subtle)'
+              }`
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem' }}>
+                  <span style={{ fontFamily: 'monospace', fontSize: '0.85rem', color: 'var(--pmo-slate)' }}>#{issue.id.substring(0,6)}</span>
+                  <span style={{ color: 'var(--pmo-gold)', fontWeight: 'bold' }}>{issue.project_slug}</span>
+                  <span className={`status-badge ${issue.type === 'bug' ? 'danger' : 'success'}`} style={{ padding: '0.15rem 0.5rem', fontSize: '0.7rem' }}>
                     {issue.type === 'bug' ? 'Bug' : 'Enh'}
                   </span>
-                </td>
-                <td style={{
-                     color: issue.priority === 'P0' ? '#ff4757' :
-                            issue.priority === 'P1' ? 'var(--pmo-gold)' :
-                            'var(--text-primary)',
-                     fontWeight: ['P0','P1'].includes(issue.priority) ? 'bold' : 'normal'
-                }}>
-                  {issue.priority}
-                </td>
-                <td style={{ maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {issue.title}
-                </td>
-                <td>
-                  <span className={`status-badge ${getStatusClass(issue.status)}`} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}>
-                    {issue.status}
+                  <span style={{ 
+                    fontSize: '0.85rem', 
+                    fontWeight: 'bold',
+                    color: issue.priority === 'P0' ? '#ff4757' : issue.priority === 'P1' ? 'var(--pmo-gold)' : 'var(--text-primary)'
+                  }}>
+                    {issue.priority}
                   </span>
-                </td>
-                <td style={{ letterSpacing: '2px', fontSize: '1rem' }}>
-                  {issue.test_unit}{issue.test_sit}{issue.test_uat}
-                </td>
-                <td style={{ color: 'var(--pmo-slate)', fontSize: '0.85rem' }}>
-                  {issue.updated_at?.toMillis ? formatDate(new Date(issue.updated_at.toMillis()).toISOString()) : ''}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </div>
+                <h4 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--text-primary)' }}>{issue.title}</h4>
+              </div>
+              <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                <span className={`status-badge ${getStatusClass(issue.status)}`} style={{ padding: '0.25rem 0.75rem', fontSize: '0.8rem' }}>
+                  {issue.status}
+                </span>
+                <div style={{ display: 'flex', gap: '4px', fontSize: '1.1rem' }}>
+                  <span title="Compile">{issue.test_compile}</span>
+                  <span title="DoD">{issue.test_dod}</span>
+                  <span title="SIT">{issue.test_sit}</span>
+                  <span title="UAT">{issue.test_uat}</span>
+                </div>
+              </div>
+            </div>
+            
+            <p style={{ 
+              margin: '0.5rem 0 0.75rem 0', 
+              fontSize: '0.9rem', 
+              color: 'var(--pmo-slate)',
+              whiteSpace: 'pre-wrap',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden'
+            }}>
+              {issue.description}
+            </p>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.75rem', marginTop: '0.5rem' }}>
+              <div style={{ color: 'var(--pmo-slate)' }}>
+                {issue.dod_items && issue.dod_items.length > 0 && (
+                  <span>DoD: {issue.dod_items.filter(i => i.completed).length}/{issue.dod_items.length} tasks</span>
+                )}
+              </div>
+              <div style={{ color: 'var(--pmo-slate)' }}>
+                Updated: {issue.updated_at?.toMillis ? formatDate(new Date(issue.updated_at.toMillis()).toISOString()) : ''}
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* ── Issue Modal ── */}
@@ -401,35 +460,97 @@ export default function IssueTrackerTab() {
                 />
               </div>
 
-              <div className="form-row" style={{ alignItems: 'flex-end' }}>
-                <div style={{ flex: 2 }}>
+              <div className="form-row" style={{ alignItems: 'flex-start' }}>
+                <div style={{ flex: 1 }}>
                   <label className="slider-label">Status</label>
                   <select
                     className="field-select"
                     value={formData.status}
                     onChange={e => setFormData(f => ({ ...f, status: e.target.value as any }))}
                   >
-                    {['New', 'Open', 'In Progress', 'In Review', 'Done', 'Parked', 'Closed'].map(s => (
+                    {['Open', 'In Progress', 'UAT', 'Done', 'Parked'].map(s => (
                       <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
                 </div>
-                <div style={{ flex: 3, display: 'flex', gap: '8px', justifyContent: 'flex-end', paddingBottom: '4px' }}>
-                  {(['test_unit', 'test_sit', 'test_uat'] as const).map(test => (
-                    <div key={test} style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'var(--pmo-slate)', marginBottom: '4px' }}>
-                        {test.split('_')[1]}
+                <div style={{ flex: 2, display: 'flex', gap: '8px', justifyContent: 'flex-end', paddingBottom: '4px' }}>
+                  {[
+                    { key: 'test_compile', label: 'Comp', tip: 'Build successful, Zero lints' },
+                    { key: 'test_dod', label: 'DoD', tip: 'Checklist 100% complete' },
+                    { key: 'test_sit', label: 'SIT', tip: 'Integrated & Verified' },
+                    { key: 'test_uat', label: 'UAT', tip: "Approved by user in chat" }
+                  ].map(test => (
+                    <div key={test.key} style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.6rem', textTransform: 'uppercase', color: 'var(--pmo-slate)', marginBottom: '4px' }}>
+                        {test.label}
                       </div>
                       <button
                         type="button"
                         className="icon-btn"
-                        onClick={() => handleTestCycle(test)}
-                        style={{ fontSize: '1.2rem', padding: '0.4rem 0.8rem', width: '45px' }}
+                        title={test.tip}
+                        onClick={() => handleTestCycle(test.key as any)}
+                        style={{ fontSize: '1.2rem', padding: '0.4rem 0.8rem', width: '45px', opacity: (test.key === 'test_uat' && formData.test_sit !== '✅') ? 0.4 : 1 }}
+                        disabled={test.key === 'test_uat' && formData.test_sit !== '✅'}
                       >
-                        {formData[test]}
+                        {formData[test.key as keyof Issue] as string}
                       </button>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {formData.test_sit === '✅' && formData.test_uat !== '✅' && (
+                <div style={{ 
+                  background: 'var(--pmo-gold-20)', 
+                  padding: '0.75rem', 
+                  borderRadius: '6px', 
+                  fontSize: '0.85rem', 
+                  border: '1px solid var(--pmo-gold)',
+                  marginBottom: '1rem'
+                }}>
+                  ⚠️ <strong>Manual Gate:</strong> UAT requires explicit approval from Will in chat before marking as passed.
+                </div>
+              )}
+
+              <div style={{ marginTop: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <label className="slider-label" style={{ margin: 0 }}>Definition of Done Checklist</label>
+                  <button type="button" onClick={handleAddDoD} style={{ fontSize: '0.75rem', padding: '2px 8px' }} className="btn-secondary">＋ Task</button>
+                </div>
+                <div style={{ 
+                  background: 'var(--bg-main)', 
+                  padding: '1rem', 
+                  borderRadius: '6px', 
+                  border: '1px solid var(--border-subtle)',
+                  maxHeight: '150px',
+                  overflowY: 'auto'
+                }}>
+                  {(!formData.dod_items || formData.dod_items.length === 0) ? (
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--pmo-slate)', fontStyle: 'italic' }}>No tasks added. Click "+ Task" to start.</p>
+                  ) : (
+                    formData.dod_items.map((item, idx) => (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={item.completed} 
+                          onChange={() => handleToggleDoD(idx)}
+                          style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                        />
+                        <span style={{ 
+                          fontSize: '0.9rem', 
+                          textDecoration: item.completed ? 'line-through' : 'none',
+                          color: item.completed ? 'var(--pmo-slate)' : 'var(--text-primary)'
+                        }}>
+                          {item.task}
+                        </span>
+                        <button 
+                          type="button" 
+                          onClick={() => setFormData(f => ({ ...f, dod_items: f.dod_items?.filter((_, i) => i !== idx) }))}
+                          style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#ff4757', cursor: 'pointer', fontSize: '0.8rem' }}
+                        >✕</button>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 

@@ -1,0 +1,46 @@
+[
+  {
+    "id": "TzGI0floaFs3p1ZN5DZb",
+    "project_slug": "issue-tracker",
+    "status": "UAT",
+    "test_compile": "✅",
+    "test_dod": "✅",
+    "test_sit": "✅",
+    "test_uat": "⬜",
+    "updated_by": "AntiGravity"
+  },
+  {
+    "id": "O7vBCb5fXAYqqyYlqJAd",
+    "project_slug": "issue-tracker",
+    "status": "UAT",
+    "test_compile": "✅",
+    "test_dod": "✅",
+    "test_sit": "✅",
+    "test_uat": "⬜",
+    "updated_by": "AntiGravity"
+  },
+  {
+    "project_slug": "issue-tracker",
+    "type": "enhancement",
+    "priority": "P2",
+    "title": "D-5: Add deprecation notice to all project BACKLOG.md files",
+    "description": "Note that Firestore /issues is now SSOT; do not delete files.",
+    "status": "UAT",
+    "test_compile": "✅",
+    "test_dod": "✅",
+    "test_sit": "✅",
+    "test_uat": "⬜",
+    "logged_date": "2026-03-30",
+    "created_by": "AntiGravity"
+  },
+  {
+    "project_slug": "issue-tracker",
+    "type": "enhancement",
+    "priority": "P3",
+    "title": "D-6: Log improve-workflow enhancements for direct Firestore writes (#46, #47, #48)",
+    "description": "Update improve-workflow project log with recent improvements.",
+    "status": "Open",
+    "logged_date": "2026-03-30",
+    "created_by": "AntiGravity"
+  }
+]

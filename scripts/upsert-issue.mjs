@@ -105,11 +105,13 @@ if (id) {
 
 // Provide sensible defaults for a new issue if not passed
 if (!id || processed.created_at === now) {
-  if (!processed.status) processed.status = 'New';
-  if (!processed.priority) processed.priority = 'P2';
-  if (!processed.test_unit) processed.test_unit = '⬜';
+  if (!processed.status) processed.status = 'Open';
+  if (!processed.priority) processed.priority = 'P4';
+  if (!processed.test_compile) processed.test_compile = '⬜';
+  if (!processed.test_dod) processed.test_dod = '⬜';
   if (!processed.test_sit) processed.test_sit = '⬜';
   if (!processed.test_uat) processed.test_uat = '⬜';
+  if (!processed.dod_items) processed.dod_items = [];
 }
 
 // ── Write ────────────────────────────────────────────────────────────────────
