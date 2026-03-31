@@ -153,6 +153,29 @@ h3 { color: var(--pmo-green); }
 .meta-link { color: var(--pmo-gold); text-decoration: none; cursor: pointer; }
 .meta-link:hover { text-decoration: underline; }
 
+/* Issue count chips on project cards (#ZKsdzd) */
+.project-issue-counts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.issue-chip { font-size: 0.75rem; padding: 2px 8px; border-radius: var(--radius-pill); font-weight: 500; }
+.issue-chip--bug  { background: rgba(255,107,107,0.15); color: #FF6B6B; border: 1px solid rgba(255,107,107,0.3); }
+.issue-chip--enh  { background: rgba(70,156,190,0.15);  color: #469CBE; border: 1px solid rgba(70,156,190,0.3); }
+.issue-chip--clean { background: rgba(124,193,112,0.12); color: var(--pmo-green); border: 1px solid rgba(124,193,112,0.25); }
+
+/* Bug/enh KPI stat cards (#kRWMiI) */
+.stat-card--bug { border-color: rgba(255,107,107,0.25); }
+.stat-card--bug .stat-num { color: #FF6B6B; }
+.stat-card--enh { border-color: rgba(70,156,190,0.25); }
+.stat-card--enh .stat-num { color: #469CBE; }
+.stat-sub { font-size: 0.7rem; color: var(--pmo-grey); margin-top: 2px; }
+
+/* Issue graph card (#a0oY7P) */
+.status-graph-card { padding: 1.25rem; margin-bottom: var(--space-xl); }
+.status-graph-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.status-graph-title { margin: 0; font-size: 0.95rem; color: var(--text-primary); font-weight: 600; }
+.status-graph-sub { font-size: 0.75rem; color: var(--pmo-grey); }
+
+/* Refresh button (#KkvylY) */
+.status-refresh-btn { margin-left: auto; flex-shrink: 0; }
+
 /* =========================================================================
    5. Workflow Tab Components
    ========================================================================= */

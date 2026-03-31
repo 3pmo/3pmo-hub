@@ -113,7 +113,7 @@ export default function App() {
           </div>
         </div>
         <footer className="app-footer" style={{ borderTop: '1px solid var(--border-subtle)', padding: '1rem 2rem', color: 'var(--pmo-gold)', textAlign: 'center', fontSize: '0.85rem' }}>
-          Last synced: {formatDateTime(syncMeta.last_sync)} · To refresh, run <code>npm run build</code> locally, commit, and push.
+          Issues: live via Firestore · Projects: last synced {formatDateTime(syncMeta.last_sync)} · Use 🔄 Refresh on Status tab to reload, or run <code>sync-registry.mjs</code> to re-sync projects data.
         </footer>
       </main>
     </div>
