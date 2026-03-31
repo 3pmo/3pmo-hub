@@ -191,7 +191,6 @@ export default function StatusTab() {
         <div className="projects-grid">
           {filtered.map(p => {
             const liveCounts = issuesByProject[p.name];
-            const hasIssues = liveCounts && (liveCounts.bugs > 0 || liveCounts.enhancements > 0);
             return (
               <div key={p.name} className="card project-card">
                 <div className="project-card-header">
@@ -228,22 +227,13 @@ export default function StatusTab() {
                 {/* Live issue counts from Firestore (#ZKsdzd) */}
                 {!issuesLoading && (
                   <div className="project-issue-counts">
-                    {hasIssues ? (
-                      <>
-                        {liveCounts.bugs > 0 && (
-                          <span className="issue-chip issue-chip--bug">
-                            🐛 {liveCounts.bugs} bug{liveCounts.bugs !== 1 ? 's' : ''}
-                          </span>
-                        )}
-                        {liveCounts.enhancements > 0 && (
-                          <span className="issue-chip issue-chip--enh">
-                            🚀 {liveCounts.enhancements} enh
-                          </span>
-                        )}
-                      </>
-                    ) : (
-                      <span className="issue-chip issue-chip--clean">✅ No open issues</span>
-                    )}
+                    <span className={`issue-chip ${(liveCounts?.bugs || 0) > 0 ? 'issue-chip--bug' : 'issue-chip--zero'}`}>
+                      🐛 {liveCounts?.bugs || 0} Bug{(liveCounts?.bugs || 0) !== 1 ? 's' : ''}
+                    </span>
+                    <span className="issue-chip-sep"> | </span>
+                    <span className={`issue-chip ${(liveCounts?.enhancements || 0) > 0 ? 'issue-chip--enh' : 'issue-chip--zero'}`}>
+                      🚀 {liveCounts?.enhancements || 0} Enhancement{(liveCounts?.enhancements || 0) !== 1 ? 's' : ''}
+                    </span>
                   </div>
                 )}
               </div>

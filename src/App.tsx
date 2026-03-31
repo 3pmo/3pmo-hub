@@ -113,7 +113,7 @@ export default function App() {
           </div>
         </div>
         <footer className="app-footer" style={{ borderTop: '1px solid var(--border-subtle)', padding: '1rem 2rem', color: 'var(--pmo-gold)', textAlign: 'center', fontSize: '0.85rem' }}>
-          Issues: live via Firestore · Projects: last synced {formatDateTime(syncMeta.last_sync)} · Use 🔄 Refresh on Status tab to reload, or run <code>sync-registry.mjs</code> to re-sync projects data.
+          Last synced: {formatDateTime(syncMeta.last_sync)} · Issue &amp; cost data is live from Firestore — use 🔄 Refresh on Status tab to reload. Project list updates on next build &amp; deploy.
         </footer>
       </main>
     </div>

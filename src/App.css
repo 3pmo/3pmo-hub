@@ -159,6 +159,8 @@ h3 { color: var(--pmo-green); }
 .issue-chip--bug  { background: rgba(255,107,107,0.15); color: #FF6B6B; border: 1px solid rgba(255,107,107,0.3); }
 .issue-chip--enh  { background: rgba(70,156,190,0.15);  color: #469CBE; border: 1px solid rgba(70,156,190,0.3); }
 .issue-chip--clean { background: rgba(124,193,112,0.12); color: var(--pmo-green); border: 1px solid rgba(124,193,112,0.25); }
+.issue-chip--zero  { background: transparent; color: var(--pmo-grey); border: 1px solid transparent; }
+.issue-chip-sep    { color: var(--pmo-grey); font-size: 0.75rem; line-height: 1; }
 
 /* Bug/enh KPI stat cards (#kRWMiI) */
 .stat-card--bug { border-color: rgba(255,107,107,0.25); }
