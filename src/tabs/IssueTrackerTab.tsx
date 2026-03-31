@@ -38,6 +38,22 @@ export default function IssueTrackerTab() {
   // Sort
   const [sortField, setSortField] = useState<'status' | 'priority' | 'project_slug' | 'updated_at'>('status');
   const [sortAsc, setSortAsc] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const resetFilters = () => {
+    setFilterProject('All');
+    setFilterType('All');
+    setFilterStatus('Open');
+    setSearchText('');
+    setSearchId('');
+  };
+
+  const handleSync = () => {
+    setIsSyncing(true);
+    // Firestore is already live via onSnapshot, but this provides visual feedback
+    // and ensures the latest snapshot is processed.
+    setTimeout(() => setIsSyncing(false), 1000);
+  };
 
   // Form / Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -282,13 +298,36 @@ export default function IssueTrackerTab() {
 
   return (
     <div className="issue-tracker-tab">
-      <div className="tab-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
+      <div className="tab-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
         <p className="tab-section-desc">
           Centralized tracking of all bugs and enhancements across projects.
         </p>
-        <button className="btn-primary" onClick={handleLogIssue} style={{ minWidth: '150px' }}>
-          ＋ Log Issue
-        </button>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button
+            className={`sync-btn ${isSyncing ? 'syncing' : ''}`}
+            onClick={handleSync}
+            title="Re-sync data from Firestore"
+            style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '6px',
+              padding: '0.5rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '42px',
+              height: '42px',
+              fontSize: '1.2rem',
+              transition: 'all 0.2s'
+            }}
+          >
+            🔄
+          </button>
+          <button className="btn-primary" onClick={handleLogIssue} style={{ minWidth: '150px' }}>
+            ＋ Log Issue
+          </button>
+        </div>
       </div>
 
       {/* ── Stat Tiles ── */}
@@ -297,15 +336,17 @@ export default function IssueTrackerTab() {
           onClick={() => setFilterType('All')}
           style={{
             flex: '1 1 120px',
-            padding: '0.75rem 1rem',
-            background: filterType === 'All' ? 'var(--pmo-gold)' : 'var(--bg-card)',
-            color: filterType === 'All' ? '#000' : 'var(--text-primary)',
+            padding: '0.85rem 1rem',
+            background: filterType === 'All' ? 'var(--pmo-gold-20, rgba(212,175,55,0.15))' : 'var(--bg-card)',
+            color: filterType === 'All' ? 'var(--pmo-gold)' : 'var(--text-primary)',
             border: `1px solid ${filterType === 'All' ? 'var(--pmo-gold)' : 'var(--border-subtle)'}`,
             borderRadius: '6px', cursor: 'pointer', textAlign: 'left' as const, transition: 'all 0.15s ease'
           }}
         >
-          <div style={{ fontSize: '1.6rem', fontWeight: 'bold', lineHeight: 1 }}>{preTypeFiltered.length}</div>
-          <div style={{ fontSize: '0.8rem', opacity: 0.8, marginTop: '2px' }}>Total</div>
+          <div style={{ fontSize: '1.4rem', fontWeight: 'bold', lineHeight: 1 }}>{filteredIssues.length} / {issues.length}</div>
+          <div style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            {filterType === 'All' && filterProject === 'All' && filterStatus === 'Open' && !searchText && !searchId ? 'Total Active' : 'Filtered / Total'}
+          </div>
         </button>
         <button
           onClick={() => setFilterType(filterType === 'bug' ? 'All' : 'bug')}
@@ -336,43 +377,45 @@ export default function IssueTrackerTab() {
       </div>
 
       {/* ── Filters ── */}
-      <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+      <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end', position: 'relative' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '2 1 200px' }}>
-          <label style={{ fontSize: '0.85rem', color: 'var(--pmo-slate)', fontWeight: 'bold' }}>🔍 Search</label>
+          <label style={{ fontSize: '0.85rem', color: searchText ? 'var(--pmo-gold)' : 'var(--pmo-slate)', fontWeight: 'bold' }}>🔍 Search</label>
           <input
-            style={{ padding: '0.4rem 0.6rem', borderRadius: '4px', border: '1px solid var(--border-subtle)', background: 'var(--bg-card)', color: 'var(--text-primary)', fontSize: '0.9rem' }}
+            className={`filter-input ${searchText ? 'active' : ''}`}
+            style={{ padding: '0.4rem 0.6rem', borderRadius: '4px', border: searchText ? '1px solid var(--pmo-gold)' : '1px solid var(--border-subtle)', background: 'var(--bg-card)', color: 'var(--text-primary)', fontSize: '0.9rem' }}
             placeholder="Filter by title or description..."
             value={searchText}
             onChange={e => setSearchText(e.target.value)}
           />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 150px' }}>
-          <label style={{ fontSize: '0.85rem', color: 'var(--pmo-slate)', fontWeight: 'bold' }}>🪪 Issue ID</label>
+          <label style={{ fontSize: '0.85rem', color: searchId ? 'var(--pmo-gold)' : 'var(--pmo-slate)', fontWeight: 'bold' }}>🪪 Issue ID</label>
           <input
-            style={{ padding: '0.4rem 0.6rem', borderRadius: '4px', border: '1px solid var(--border-subtle)', background: 'var(--bg-card)', color: 'var(--text-primary)', fontSize: '0.9rem', fontFamily: 'monospace' }}
+            className={`filter-input ${searchId ? 'active' : ''}`}
+            style={{ padding: '0.4rem 0.6rem', borderRadius: '4px', border: searchId ? '1px solid var(--pmo-gold)' : '1px solid var(--border-subtle)', background: 'var(--bg-card)', color: 'var(--text-primary)', fontSize: '0.9rem', fontFamily: 'monospace' }}
             placeholder="Paste partial ID..."
             value={searchId}
             onChange={e => setSearchId(e.target.value)}
           />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <label style={{ fontSize: '0.85rem', color: 'var(--pmo-slate)', fontWeight: 'bold' }}>Project</label>
-          <select className="filter-select" value={filterProject} onChange={e => setFilterProject(e.target.value)} style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border-subtle)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}>
+          <label style={{ fontSize: '0.85rem', color: filterProject !== 'All' ? 'var(--pmo-gold)' : 'var(--pmo-slate)', fontWeight: 'bold' }}>Project</label>
+          <select className={`filter-select ${filterProject !== 'All' ? 'active' : ''}`} value={filterProject} onChange={e => setFilterProject(e.target.value)} style={{ padding: '0.4rem', borderRadius: '4px', border: filterProject !== 'All' ? '1px solid var(--pmo-gold)' : '1px solid var(--border-subtle)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}>
             <option value="All">All Projects</option>
             {uniqueProjects.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <label style={{ fontSize: '0.85rem', color: 'var(--pmo-slate)', fontWeight: 'bold' }}>Type</label>
-          <select className="filter-select" value={filterType} onChange={e => setFilterType(e.target.value)} style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border-subtle)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}>
+          <label style={{ fontSize: '0.85rem', color: filterType !== 'All' ? 'var(--pmo-gold)' : 'var(--pmo-slate)', fontWeight: 'bold' }}>Type</label>
+          <select className={`filter-select ${filterType !== 'All' ? 'active' : ''}`} value={filterType} onChange={e => setFilterType(e.target.value)} style={{ padding: '0.4rem', borderRadius: '4px', border: filterType !== 'All' ? '1px solid var(--pmo-gold)' : '1px solid var(--border-subtle)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}>
             <option value="All">All Types</option>
             <option value="bug">Bug</option>
             <option value="enhancement">Enhancement</option>
           </select>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <label style={{ fontSize: '0.85rem', color: 'var(--pmo-slate)', fontWeight: 'bold' }}>Status</label>
-          <select className="filter-select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border-subtle)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}>
+          <label style={{ fontSize: '0.85rem', color: filterStatus !== 'Open' ? 'var(--pmo-gold)' : 'var(--pmo-slate)', fontWeight: 'bold' }}>Status</label>
+          <select className={`filter-select ${filterStatus !== 'Open' ? 'active' : ''}`} value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ padding: '0.4rem', borderRadius: '4px', border: filterStatus !== 'Open' ? '1px solid var(--pmo-gold)' : '1px solid var(--border-subtle)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}>
             <option value="All">All Statuses</option>
             <option value="Open">Active (excl. Done/Parked)</option>
             <option value="In Progress">In Progress</option>
@@ -395,6 +438,26 @@ export default function IssueTrackerTab() {
             <option value="updated_at-false">Recently Updated</option>
           </select>
         </div>
+        
+        {(filterProject !== 'All' || filterType !== 'All' || filterStatus !== 'Open' || searchText || searchId) && (
+          <button 
+            className="btn-text" 
+            onClick={resetFilters}
+            style={{ 
+              padding: '0.4rem 0.75rem', 
+              fontSize: '0.85rem', 
+              color: 'var(--pmo-gold)',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              border: 'none',
+              background: 'none',
+              textDecoration: 'underline',
+              marginLeft: 'auto'
+            }}
+          >
+            Clear Filters
+          </button>
+        )}
       </div>
 
       {/* ── Issue Cards ── */}

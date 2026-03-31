@@ -112,8 +112,8 @@ export default function App() {
             {activeTab === 'issues' && <IssueTrackerTab />}
           </div>
         </div>
-        <footer className="app-footer" style={{ borderTop: '1px solid var(--border-subtle)', padding: '1rem 2rem', color: 'var(--pmo-gold)', textAlign: 'center', fontSize: '0.85rem' }}>
-          Last synced: {formatDateTime(syncMeta.last_sync)} · Issue &amp; cost data is <strong>live</strong> from Firestore — use 🔄 Refresh on Status tab if needed. Project list updates on next build &amp; deploy.
+        <footer className="app-footer" style={{ borderTop: '1px solid var(--border-subtle)', padding: '0.75rem 1rem', color: 'var(--pmo-gold)', textAlign: 'center', fontSize: '0.75rem', opacity: 0.8 }}>
+          {formatDateTime(syncMeta.last_sync)}
         </footer>
       </main>
     </div>
