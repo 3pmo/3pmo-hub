@@ -77,8 +77,12 @@ export default function StatusTab() {
   const graphData = (() => {
     const byDate: Record<string, { date: string; bugs: number; enhancements: number }> = {};
     issues.forEach(iss => {
-      const raw = iss.logged_date
-        || (iss.created_at?.toDate ? iss.created_at.toDate().toISOString().slice(0, 10) : null);
+      // logged_date may be a Firestore Timestamp at runtime even though typed as string
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const ld = iss.logged_date as any;
+      const raw: string | null = typeof ld === 'string' ? ld
+        : (ld?.toDate ? ld.toDate().toISOString().slice(0, 10) : null)
+          ?? (iss.created_at?.toDate ? iss.created_at.toDate().toISOString().slice(0, 10) : null);
       if (!raw) return;
       const date = raw.slice(0, 10);
       if (!byDate[date]) byDate[date] = { date, bugs: 0, enhancements: 0 };
