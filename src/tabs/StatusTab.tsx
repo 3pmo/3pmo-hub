@@ -85,6 +85,7 @@ export default function StatusTab() {
           ?? (iss.created_at?.toDate ? iss.created_at.toDate().toISOString().slice(0, 10) : null);
       if (!raw) return;
       const date = raw.slice(0, 10);
+      if (isNaN(new Date(date).getTime())) return; // skip unparseable dates
       if (!byDate[date]) byDate[date] = { date, bugs: 0, enhancements: 0 };
       if (iss.type === 'bug') byDate[date].bugs++;
       else byDate[date].enhancements++;
