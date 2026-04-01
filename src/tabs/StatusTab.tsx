@@ -92,10 +92,16 @@ export default function StatusTab() {
     });
     return Object.values(byDate)
       .sort((a, b) => a.date.localeCompare(b.date))
-      .map(d => ({
-        ...d,
-        date: new Date(d.date + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
-      }));
+      .map(d => {
+        const [y, m, day] = d.date.split('-').map(Number);
+        const dateObj = new Date(y, m - 1, day);
+        return {
+          ...d,
+          date: isNaN(dateObj.getTime()) 
+            ? 'Unknown' 
+            : dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+        };
+      });
   })();
 
   // Filtered project list
