@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { firestore } from '../services/firebase';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import projectsData from '../assets/projects.json';
 import { formatDate } from '../utils/formatDate';
 
 interface Project {
@@ -37,11 +36,50 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 export default function StatusTab() {
-  const [projects] = useState<Project[]>(projectsData as Project[]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [issues, setIssues] = useState<Issue[]>([]);
   const [issuesLoading, setIssuesLoading] = useState(true);
+  const [projectsLoading, setProjectsLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
+
+  // ── Live projects from Firestore (Sync with SSOT) ──
+  useEffect(() => {
+    const q = query(collection(firestore, 'projects'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const parsed: Project[] = snapshot.docs.map(doc => {
+        const d = doc.data();
+        return {
+          name: d.name || doc.id,
+          status: d.status || null,
+          description: d.description || null,
+          current_ai: d.current_ai || null,
+          // Firestore Timestamp to ISO string
+          last_active: d.last_active?.toDate ? d.last_active.toDate().toISOString().slice(0, 10) : (d.last_active || null),
+          github: d.github_repo || null,
+          drive: d.drive_path || null,
+          local: d.local_path || null,
+          deploy: d.deploy_method || null,
+          category: d.category || 'active',
+        } as Project;
+      });
+
+      // Sort: standing -> active -> tab, then alphabetically
+      const order: Record<string, number> = { standing: 0, active: 1, tab: 2 };
+      const sorted = parsed.sort((a, b) => {
+        const ao = order[a.category!] ?? 9;
+        const bo = order[b.category!] ?? 9;
+        if (ao !== bo) return ao - bo;
+        return a.name.localeCompare(b.name);
+      });
+
+      setProjects(sorted);
+      setProjectsLoading(false);
+      setLastUpdated(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    });
+    return () => unsubscribe();
+  }, []);
 
   // ── Live issues from Firestore ────────────────────────────────────────────
   useEffect(() => {
@@ -51,6 +89,7 @@ export default function StatusTab() {
       snapshot.forEach(doc => parsed.push({ id: doc.id, ...doc.data() } as Issue));
       setIssues(parsed);
       setIssuesLoading(false);
+      setLastUpdated(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     });
     return () => unsubscribe();
   }, []);
@@ -92,10 +131,16 @@ export default function StatusTab() {
     });
     return Object.values(byDate)
       .sort((a, b) => a.date.localeCompare(b.date))
-      .map(d => ({
-        ...d,
-        date: new Date(d.date + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
-      }));
+      .map(d => {
+        const [y, m, day] = d.date.split('-').map(Number);
+        const dateObj = new Date(y, m - 1, day);
+        return {
+          ...d,
+          date: isNaN(dateObj.getTime()) 
+            ? 'Unknown' 
+            : dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+        };
+      });
   })();
 
   // Filtered project list
@@ -120,7 +165,7 @@ export default function StatusTab() {
           { label: 'Tabs',     value: projects.filter(p => p.status === 'Active Tab').length },
         ].map(s => (
           <div key={s.label} className="stat-card">
-            <div className="stat-num">{s.value}</div>
+            <div className="stat-num">{projectsLoading ? '…' : s.value}</div>
             <div className="stat-label">{s.label}</div>
           </div>
         ))}
@@ -141,7 +186,10 @@ export default function StatusTab() {
         <div className="card status-graph-card">
           <div className="status-graph-header">
             <h3 className="status-graph-title">Issues Logged Over Time</h3>
-            <span className="status-graph-sub">All projects · {issues.length} total</span>
+            <div className="status-graph-meta">
+              <span className="status-graph-sub">All projects · {issues.length} total</span>
+              {lastUpdated && <span className="status-last-updated">Last Updated: {lastUpdated}</span>}
+            </div>
           </div>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={graphData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
@@ -181,12 +229,6 @@ export default function StatusTab() {
             >{s}</button>
           ))}
         </div>
-        {/* Refresh button (#KkvylY) */}
-        <button
-          className="filter-btn status-refresh-btn"
-          onClick={() => window.location.reload()}
-          title="Force-refresh all data"
-        >🔄 Refresh</button>
       </div>
 
       {/* ── Projects Grid ── */}
@@ -233,11 +275,11 @@ export default function StatusTab() {
                 {!issuesLoading && (
                   <div className="project-issue-counts">
                     <span className={`issue-chip ${(liveCounts?.bugs || 0) > 0 ? 'issue-chip--bug' : 'issue-chip--zero'}`}>
-                      🐛 {liveCounts?.bugs || 0} Bug{(liveCounts?.bugs || 0) !== 1 ? 's' : ''}
+                      {`🐛 ${liveCounts?.bugs || 0} Bug${(liveCounts?.bugs || 0) !== 1 ? 's' : ''}`}
                     </span>
                     <span className="issue-chip-sep"> | </span>
                     <span className={`issue-chip ${(liveCounts?.enhancements || 0) > 0 ? 'issue-chip--enh' : 'issue-chip--zero'}`}>
-                      🚀 {liveCounts?.enhancements || 0} Enhancement{(liveCounts?.enhancements || 0) !== 1 ? 's' : ''}
+                      {`🚀 ${liveCounts?.enhancements || 0} Enhancement${(liveCounts?.enhancements || 0) !== 1 ? 's' : ''}`}
                     </span>
                   </div>
                 )}

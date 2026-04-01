@@ -129,9 +129,10 @@ h3 { color: var(--pmo-green); }
 .stat-card {
   background: var(--bg-elevated); padding: var(--space-lg); border-radius: var(--radius-lg);
   border: 1px solid var(--border-subtle); text-align: center;
+  display: flex; flex-direction: column; justify-content: center; min-height: 130px;
 }
-.stat-num { font-size: 2.5rem; font-weight: 700; color: var(--text-primary); }
-.stat-label { color: var(--pmo-grey); font-size: var(--text-sm); text-transform: uppercase; }
+.stat-num { font-size: 2.5rem; font-weight: 700; color: var(--text-primary); line-height: 1; }
+.stat-label { color: var(--pmo-grey); font-size: var(--text-sm); text-transform: uppercase; margin-top: 4px; }
 
 .status-filters { display: flex; gap: var(--space-md); margin-bottom: var(--space-lg); }
 .search-input {
@@ -145,12 +146,13 @@ h3 { color: var(--pmo-green); }
   padding: var(--space-lg); transition: transform 0.2s;
 }
 .project-card:hover { transform: translateY(-4px); border-color: rgba(124, 193, 112, 0.3); }
-.project-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-sm); }
-.project-name { font-size: 1.25rem; font-weight: 700; color: var(--pmo-green); }
-.status-badge { background: rgba(124,193,112,0.1); color: var(--pmo-green); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase; }
+.project-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm); gap: 12px; }
+.project-name { font-size: 1.25rem; font-weight: 700; color: var(--pmo-green); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+.status-badge { background: rgba(124,193,112,0.1); color: var(--pmo-green); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase; flex-shrink: 0; }
 .project-desc { color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-md); line-height: 1.4; }
-.project-meta, .project-backlog { font-size: 0.8rem; color: var(--pmo-grey); display: flex; justify-content: space-between; margin-top: 8px; }
-.meta-link { color: var(--pmo-gold); text-decoration: none; cursor: pointer; }
+.project-meta, .project-backlog { font-size: 0.8rem; color: var(--pmo-grey); display: flex; justify-content: space-between; margin-top: 8px; gap: 8px; }
+.project-meta span { white-space: nowrap; }
+.meta-link { color: var(--pmo-gold); text-decoration: none; cursor: pointer; flex-shrink: 0; }
 .meta-link:hover { text-decoration: underline; }
 
 /* Issue count chips on project cards (#ZKsdzd) */
@@ -171,9 +173,11 @@ h3 { color: var(--pmo-green); }
 
 /* Issue graph card (#a0oY7P) */
 .status-graph-card { padding: 1.25rem; margin-bottom: var(--space-xl); }
-.status-graph-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.status-graph-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
 .status-graph-title { margin: 0; font-size: 0.95rem; color: var(--text-primary); font-weight: 600; }
+.status-graph-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
 .status-graph-sub { font-size: 0.75rem; color: var(--pmo-grey); }
+.status-last-updated { font-size: 0.7rem; color: var(--agy-lime); font-weight: 700; text-transform: uppercase; }
 
 /* Refresh button (#KkvylY) */
 .status-refresh-btn { margin-left: auto; flex-shrink: 0; }
