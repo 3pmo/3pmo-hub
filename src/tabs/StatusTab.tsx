@@ -223,12 +223,6 @@ export default function StatusTab() {
             >{s}</button>
           ))}
         </div>
-        {/* Refresh button (#KkvylY) */}
-        <button
-          className="filter-btn status-refresh-btn"
-          onClick={() => window.location.reload()}
-          title="Force-refresh all data"
-        >🔄 Refresh</button>
       </div>
 
       {/* ── Projects Grid ── */}
