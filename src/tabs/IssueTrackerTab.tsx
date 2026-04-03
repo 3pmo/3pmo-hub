@@ -445,8 +445,8 @@ export default function IssueTrackerTab() {
             setSortField(f as any);
             setSortAsc(a === 'true');
           }} style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border-subtle)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}>
-            <option value="status-true">Status</option>
             <option value="priority-true">Priority (P0 → P4)</option>
+            <option value="status-true">Status</option>
             <option value="priority-false">Priority (P4 → P0)</option>
             <option value="project_slug-true">Project (A → Z)</option>
             <option value="updated_at-false">Recently Updated</option>
