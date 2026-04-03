@@ -36,7 +36,7 @@ export default function IssueTrackerTab() {
   const [searchId, setSearchId] = useState('');
 
   // Sort
-  const [sortField, setSortField] = useState<'status' | 'priority' | 'project_slug' | 'updated_at'>('status');
+  const [sortField, setSortField] = useState<'status' | 'priority' | 'project_slug' | 'updated_at'>('priority');
   const [sortAsc, setSortAsc] = useState(true);
 
   const resetFilters = () => {
