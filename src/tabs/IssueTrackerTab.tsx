@@ -106,10 +106,10 @@ export default function IssueTrackerTab() {
 
   // Pre-type-filter: used for stat tile counts (project + status only)
   const preTypeFiltered = issues.filter(iss => {
-    if (filterProject !== 'All' && iss.project_slug !== filterProject) return false;
+    if (filterProject !== 'All' && (iss.project_slug || '') !== filterProject) return false;
     if (filterStatus === 'Open') {
-      if (['Done', 'Parked'].includes(iss.status)) return false;
-    } else if (filterStatus !== 'All' && iss.status !== filterStatus) {
+      if (['Done', 'Parked'].includes(iss.status || '')) return false;
+    } else if (filterStatus !== 'All' && (iss.status || '') !== filterStatus) {
       return false;
     }
     return true;
@@ -117,13 +117,13 @@ export default function IssueTrackerTab() {
 
   // Full filter (including type + search)
   const filteredIssues = preTypeFiltered.filter(iss => {
-    if (filterType !== 'All' && iss.type !== filterType) return false;
+    if (filterType !== 'All' && (iss.type || '') !== filterType) return false;
     if (searchId.trim()) {
-      if (!iss.id.toLowerCase().includes(searchId.trim().toLowerCase())) return false;
+      if (!(iss.id || '').toLowerCase().includes(searchId.trim().toLowerCase())) return false;
     }
     if (searchText.trim()) {
       const q = searchText.trim().toLowerCase();
-      const match = iss.title.toLowerCase().includes(q) || (iss.description || '').toLowerCase().includes(q);
+      const match = (iss.title || '').toLowerCase().includes(q) || (iss.description || '').toLowerCase().includes(q);
       if (!match) return false;
     }
     return true;
@@ -291,6 +291,8 @@ export default function IssueTrackerTab() {
       if (editingIssue) {
         // 2. UPDATE: Only send mutable fields to avoid rules violations on immutable fields
         const updatePayload = {
+          project_slug: data.project_slug,
+          title: data.title,
           description: data.description,
           status: data.status,
           priority: data.priority,
