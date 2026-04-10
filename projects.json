@@ -10,7 +10,7 @@
     "drive": "https://drive.google.com/drive/folders/1lqnf5RfvAz1pMZd0ZR1ER8GjRwo-pM4z",
     "local": null,
     "deploy": "Indirect — copy workflow-diagram.html to 3pmo-hub public/, then push 3pmo-hub to trigger GitHub Actions deploy",
-    "backlog": "🐛 5 Bugs | 🚀 35 Enhancements",
+    "backlog": "🐛 4 Bugs | 🚀 33 Enhancements",
     "active_item": "Consolidated 'status' project into this standing project on 2026-04-07. Dashboard UI is now a sub-tab of Workflow.",
     "parent_project_id": null,
     "tags": [],
