@@ -1,5 +1,6 @@
 [
   {
+    "slug": "improve-workflow",
     "name": "improve-workflow",
     "status": "Standing (Active)",
     "description": "Standing project for all CI/CD, DevOps, and workflow improvements to the AI ecosystem. Tracks changes to _System protocols, and now hosts the unified ecosystem Workflow Dashboard (consolidated from 'status').",
@@ -9,17 +10,15 @@
     "drive": "https://drive.google.com/drive/folders/1lqnf5RfvAz1pMZd0ZR1ER8GjRwo-pM4z",
     "local": null,
     "deploy": "Indirect — copy workflow-diagram.html to 3pmo-hub public/, then push 3pmo-hub to trigger GitHub Actions deploy",
-<<<<<<< HEAD
-    "backlog": "🐛 5 Bugs | 🚀 35 Enhancements",
-=======
-    "backlog": "🐛 6 Bugs | 🚀 36 Enhancements",
->>>>>>> 6983b02cc5e36dd942bcdd34163acc6261cf3cfa
+    "backlog": "🐛 4 Bugs | 🚀 33 Enhancements",
     "active_item": "Consolidated 'status' project into this standing project on 2026-04-07. Dashboard UI is now a sub-tab of Workflow.",
     "parent_project_id": null,
     "tags": [],
-    "category": "standing"
+    "category": "standing",
+    "updated_at": null
   },
   {
+    "slug": "zTemp",
     "name": "zTemp",
     "status": "Standing",
     "description": "Default play area for anything that is not an official project — experiments, throwaway scripts, scratch docs, exploratory work.",
@@ -33,9 +32,11 @@
     "active_item": "Active item: microsoft-email-switch — COMPLETED. Teams web and desktop switched to wajlevy@gmail.com. Yahoo account dormant. P3 open item: decide Option A vs B for yahoo account closure.",
     "parent_project_id": null,
     "tags": [],
-    "category": "standing"
+    "category": "standing",
+    "updated_at": "2026-03-28T13:16:49.072Z"
   },
   {
+    "slug": "3pmo-hub",
     "name": "3pmo-hub",
     "status": "Active (Deployed)",
     "description": "Personal productivity hub — single deployed web app consolidating all AI project tooling into one place. Serves as parent codebase for all tab sub-projects.",
@@ -49,9 +50,11 @@
     "active_item": null,
     "parent_project_id": null,
     "tags": [],
-    "category": "active"
+    "category": "active",
+    "updated_at": "2026-03-29T18:27:58.887Z"
   },
   {
+    "slug": "business",
     "name": "Business",
     "status": "Active (Initiating)",
     "description": "Deep research and advice on building a new asset-backed business portfolio.",
@@ -65,9 +68,11 @@
     "active_item": "3PMO Theme. Report Tab: Business.",
     "parent_project_id": null,
     "tags": [],
-    "category": "active"
+    "category": "active",
+    "updated_at": "2026-04-01T14:00:01.832Z"
   },
   {
+    "slug": "hol-home",
     "name": "hol-home",
     "status": "Active (Planning)",
     "description": "Automated agentic real estate tracking pipeline for tourist-licensed (HUTG) properties in Llafranc, Begur, and Calella de Palafrugell (Girona, Spain).",
@@ -81,9 +86,11 @@
     "active_item": null,
     "parent_project_id": null,
     "tags": [],
-    "category": "active"
+    "category": "active",
+    "updated_at": "2026-03-28T13:16:49.072Z"
   },
   {
+    "slug": "improve-brand",
     "name": "improve-brand",
     "status": "Active",
     "description": "Provides a brand-specific improvements project to ensure all _system workflow files are appropriately updated as and when the brand is improved.",
@@ -97,9 +104,11 @@
     "active_item": null,
     "parent_project_id": null,
     "tags": [],
-    "category": "active"
+    "category": "active",
+    "updated_at": "2026-03-28T13:16:49.072Z"
   },
   {
+    "slug": "legacy",
     "name": "legacy",
     "status": "Active (Initiating)",
     "description": "Portfolio Intelligence curriculum and thought leadership content creation. Docs-only project hosted on 3pmo.com.",
@@ -113,9 +122,11 @@
     "active_item": null,
     "parent_project_id": null,
     "tags": [],
-    "category": "active"
+    "category": "active",
+    "updated_at": "2026-03-28T13:16:49.072Z"
   },
   {
+    "slug": "lseg",
     "name": "lseg",
     "status": "Active (Initiating)",
     "description": "Research, planning and coaching project to support Will Levy through his transition to Director, Tooling & Data at LSEG. Covers 90-day plan, stakeholder strategy, leadership mindset, PPM tooling strategy and ongoing advisory through the tenure.",
@@ -136,9 +147,11 @@
       "clarity",
       "director"
     ],
-    "category": "active"
+    "category": "active",
+    "updated_at": "2026-04-07T14:29:13.743Z"
   },
   {
+    "slug": "m4p-model",
     "name": "m4p-model",
     "status": "Active",
     "description": "Standalone docs and code project to produce an executive capability model representing the integrated ecosystem of SPM, PPM, Value Streams, and Agile-at-Scale execution.",
@@ -152,9 +165,11 @@
     "active_item": null,
     "parent_project_id": null,
     "tags": [],
-    "category": "active"
+    "category": "active",
+    "updated_at": "2026-03-28T13:16:49.072Z"
   },
   {
+    "slug": "system-cleanup",
     "name": "system-cleanup",
     "status": "Active",
     "description": "Multi-phase cleanup of Windows PC environment — removing legacy storage, migrating to Google Drive, reclaiming disk space, and consolidating Drive root.",
@@ -168,9 +183,11 @@
     "active_item": "Bug is parked.",
     "parent_project_id": null,
     "tags": [],
-    "category": "active"
+    "category": "active",
+    "updated_at": "2026-03-28T13:16:49.072Z"
   },
   {
+    "slug": "uae-director",
     "name": "uae-director",
     "status": "Active",
     "description": "Strategic career project to secure a Director-level role in UAE Tier-1 Financial Services or SWF by September 2026.",
@@ -184,9 +201,11 @@
     "active_item": "Docs-only research per protocols.",
     "parent_project_id": null,
     "tags": [],
-    "category": "active"
+    "category": "active",
+    "updated_at": "2026-03-28T13:16:49.072Z"
   },
   {
+    "slug": "cost-tracker",
     "name": "cost-tracker",
     "status": "Active Tab",
     "description": "Track and display AI token usage and associated costs across Claude and Gemini, including API integration, real-time gauges, and usage history.",
@@ -200,9 +219,11 @@
     "active_item": null,
     "parent_project_id": "3pmo-hub",
     "tags": [],
-    "category": "tab"
+    "category": "tab",
+    "updated_at": "2026-04-10T06:45:41.477Z"
   },
   {
+    "slug": "issue-tracker",
     "name": "issue-tracker",
     "status": "Active (Initiating)",
     "description": "Centralised tab within 3pmo-hub that replaces per-project BACKLOG.md files with a live Firestore-backed database.",
@@ -212,17 +233,15 @@
     "drive": "https://drive.google.com/drive/folders/184D7ReqTU6JGzLlyCuxskdBm2rVzy22g",
     "local": null,
     "deploy": null,
-<<<<<<< HEAD
     "backlog": "🐛 1 Bug | 🚀 6 Enhancements",
-=======
-    "backlog": "🐛 5 Bugs | 🚀 1 Enhancement",
->>>>>>> 6983b02cc5e36dd942bcdd34163acc6261cf3cfa
     "active_item": null,
     "parent_project_id": "3pmo-hub",
     "tags": [],
-    "category": "tab"
+    "category": "tab",
+    "updated_at": "2026-03-29T15:02:31.923Z"
   },
   {
+    "slug": "pairwise",
     "name": "pairwise",
     "status": "Active Tab",
     "description": "Web application for pairwise analysis, integrated as a new tab on 3pmo-hub.",
@@ -236,9 +255,11 @@
     "active_item": null,
     "parent_project_id": "3pmo-hub",
     "tags": [],
-    "category": "tab"
+    "category": "tab",
+    "updated_at": "2026-03-28T13:16:49.072Z"
   },
   {
+    "slug": "thought",
     "name": "thought",
     "status": "Active Tab",
     "description": "Tab within 3pmo-hub that provides functionality to capture, edit, and visualise thoughts for prioritisation.",
@@ -252,9 +273,11 @@
     "active_item": null,
     "parent_project_id": "3pmo-hub",
     "tags": [],
-    "category": "tab"
+    "category": "tab",
+    "updated_at": "2026-03-28T13:16:49.072Z"
   },
   {
+    "slug": "status",
     "name": "status",
     "status": "Merged (Consolidated)",
     "description": "(MERGED) Status dashboard tab for 3pmo-hub — now consolidated into 'improve-workflow'.",
@@ -268,6 +291,7 @@
     "active_item": "Merged into 'improve-workflow' on 2026-04-07. Code and local docs moved to legacy/status.",
     "parent_project_id": "3pmo-hub",
     "tags": [],
-    "category": "archived"
+    "category": "archived",
+    "updated_at": null
   }
 ]

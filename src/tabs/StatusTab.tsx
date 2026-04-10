@@ -1,24 +1,3 @@
-import { useState, useEffect } from 'react';
-import { firestore } from '../services/firebase';
-import { collection, onSnapshot, query } from 'firebase/firestore';
-import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { formatDate } from '../utils/formatDate';
-
-interface Project {
-  name: string;
-  status?: string | null;
-  description?: string | null;
-  current_ai?: string | null;
-  last_active?: string | null;
-  github?: string | null;
-  backlog?: string | null;
-  deploy?: string | null;
-  drive?: string | null;
-  local?: string | null;
-  category?: string | null;
-  created_at?: any;
-}
-
 interface Issue {
   id: string;
   project_slug: string;
@@ -27,6 +6,10 @@ interface Issue {
   logged_date?: string;
   created_at?: any;
   updated_at?: any;
+  test_compile?: string;
+  test_dod?: string;
+  test_sit?: string;
+  dod_items?: { task: string; completed: boolean }[];
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -50,7 +33,7 @@ export default function StatusTab() {
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
-  const [filterMetric, setFilterMetric] = useState<'All' | 'Active' | 'Standing' | 'Active Tab' | 'Bugs' | 'Enhancements'>('All');
+  const [filterMetric, setFilterMetric] = useState<'All' | 'Active' | 'Standing' | 'Active Tab' | 'Bugs' | 'Enhancements' | 'Work'>('All');
 
   // ── Live projects from Firestore (Sync with SSOT) ──
   useEffect(() => {
@@ -63,7 +46,6 @@ export default function StatusTab() {
           status: d.status || null,
           description: d.description || null,
           current_ai: d.current_ai || null,
-          // Firestore Timestamp to ISO string
           last_active: d.last_active?.toDate ? d.last_active.toDate().toISOString().slice(0, 10) : (d.last_active || null),
           created_at: d.created_at?.toDate ? d.created_at.toDate().toISOString().slice(0, 10) : null,
           github: d.github_repo || null,
@@ -74,7 +56,6 @@ export default function StatusTab() {
         } as Project;
       });
 
-      // Sort: standing -> active -> tab, then alphabetically
       const order: Record<string, number> = { standing: 0, active: 1, tab: 2 };
       const sorted = parsed.sort((a, b) => {
         const ao = order[a.category!] ?? 9;
@@ -90,7 +71,7 @@ export default function StatusTab() {
     return () => unsubscribe();
   }, []);
 
-  // ── Live issues from Firestore ────────────────────────────────────────────
+  // ── Live issues from Firestore ──
   useEffect(() => {
     const q = query(collection(firestore, 'issues'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -103,7 +84,7 @@ export default function StatusTab() {
     return () => unsubscribe();
   }, []);
 
-  // ── Live history from Firestore ───────────────────────────────────────────
+  // ── Live history from Firestore ──
   useEffect(() => {
     const q = query(collection(firestore, 'issue_history'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -113,9 +94,22 @@ export default function StatusTab() {
     return () => unsubscribe();
   }, []);
 
-  // ── Derived data ──────────────────────────────────────────────────────────
+  // ── Derived data ──
 
-  // Per-project open issue counts (#ZKsdzd — live from Firestore SSOT)
+  // Helper to calculate remediation work points (#h3sJDtR8SiUIvjCgjlSV)
+  const calculateWorkPoints = (iss: Issue) => {
+    let pts = 0;
+    if (iss.test_compile === '✅') pts++;
+    if (iss.test_dod === '✅') pts++;
+    if (iss.test_sit === '✅') pts++;
+    if (iss.dod_items) {
+      pts += iss.dod_items.filter(i => i.completed).length;
+    }
+    // Also count being "Done" or "Closed" or "UAT" as work units
+    if (['Done', 'Closed', 'UAT'].includes(iss.status)) pts += 1;
+    return pts;
+  };
+
   const issuesByProject = issues.reduce((acc, iss) => {
     if (['Done', 'Blocked'].includes(iss.status)) return acc;
     if (!acc[iss.project_slug]) acc[iss.project_slug] = { bugs: 0, enhancements: 0 };
@@ -124,14 +118,14 @@ export default function StatusTab() {
     return acc;
   }, {} as Record<string, { bugs: number; enhancements: number }>);
 
-  // Global KPI counts (#kRWMiI)
   const openIssues = issues.filter(i => !['Done', 'Blocked'].includes(i.status));
   const totalOpenBugs = openIssues.filter(i => i.type === 'bug').length;
   const totalOpenEnhs = openIssues.filter(i => i.type === 'enhancement').length;
   const totalBugsAll = issues.filter(i => i.type === 'bug').length;
   const totalEnhsAll = issues.filter(i => i.type === 'enhancement').length;
+  const totalWorkUnits = issues.reduce((sum, iss) => sum + calculateWorkPoints(iss), 0);
 
-  // Issue graph data — CUMULATIVE progress (#a0oY7P)
+  // Issue graph data — Consolidated Cumulative Progress
   const graphData = (() => {
     const byDate: Record<string, { 
       date: string; 
@@ -140,9 +134,9 @@ export default function StatusTab() {
       projects: number; 
       remediated: number; 
       total_created: number;
+      work_points: number;
     }> = {};
     
-    // Helper to extract date string
     const getDateStr = (val: any) => {
       if (!val) return null;
       if (typeof val === 'string') return val.slice(0, 10);
@@ -155,20 +149,33 @@ export default function StatusTab() {
     issues.forEach(iss => {
       const date = getDateStr(iss.logged_date) ?? getDateStr(iss.created_at);
       if (!date || isNaN(new Date(date).getTime())) return;
-      if (!byDate[date]) byDate[date] = { date, bugs: 0, enhancements: 0, projects: 0, remediated: 0, total_created: 0 };
+      if (!byDate[date]) byDate[date] = { date, bugs: 0, enhancements: 0, projects: 0, remediated: 0, total_created: 0, work_points: 0 };
       if (iss.type === 'bug') byDate[date].bugs++;
       else byDate[date].enhancements++;
       byDate[date].total_created++;
     });
 
-    // 2. Process History (Remediation Events)
+    // 2. Process History (Remediation Events & Work Units)
+    // For work points, we use the issue's updated_at or history timestamp
+    issues.forEach(iss => {
+      const workPts = calculateWorkPoints(iss);
+      if (workPts > 0) {
+        const date = getDateStr(iss.updated_at) ?? getDateStr(iss.created_at);
+        if (date && !isNaN(new Date(date).getTime())) {
+          if (!byDate[date]) byDate[date] = { date, bugs: 0, enhancements: 0, projects: 0, remediated: 0, total_created: 0, work_points: 0 };
+          byDate[date].work_points += workPts;
+        }
+      }
+    });
+
     history.forEach(h => {
       const statusChange = h.changes?.status;
-      if (statusChange && ['Done', 'Blocked'].includes(statusChange.new)) {
+      if (statusChange && ['Done', 'Blocked', 'UAT'].includes(statusChange.new)) {
         const date = getDateStr(h.timestamp);
-        if (!date || isNaN(new Date(date).getTime())) return;
-        if (!byDate[date]) byDate[date] = { date, bugs: 0, enhancements: 0, projects: 0, remediated: 0, total_created: 0 };
-        byDate[date].remediated++;
+        if (date && !isNaN(new Date(date).getTime())) {
+          if (!byDate[date]) byDate[date] = { date, bugs: 0, enhancements: 0, projects: 0, remediated: 0, total_created: 0, work_points: 0 };
+          byDate[date].remediated++;
+        }
       }
     });
 
@@ -176,18 +183,18 @@ export default function StatusTab() {
     projects.forEach(proj => {
       const date = getDateStr(proj.created_at) ?? getDateStr(proj.last_active);
       if (!date || isNaN(new Date(date).getTime())) return;
-      if (!byDate[date]) byDate[date] = { date, bugs: 0, enhancements: 0, projects: 0, remediated: 0, total_created: 0 };
+      if (!byDate[date]) byDate[date] = { date, bugs: 0, enhancements: 0, projects: 0, remediated: 0, total_created: 0, work_points: 0 };
       byDate[date].projects++;
     });
 
     const sortedDates = Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date));
     
-    // Calculate cumulative totals
     let cumulativeBugs = 0;
     let cumulativeEnhs = 0;
     let cumulativeProjects = 0;
     let cumulativeRemediated = 0;
     let cumulativeTotalCreated = 0;
+    let cumulativeWorkPoints = 0;
     
     return sortedDates.map(d => {
       cumulativeBugs += d.bugs;
@@ -195,6 +202,7 @@ export default function StatusTab() {
       cumulativeProjects += d.projects;
       cumulativeRemediated += d.remediated;
       cumulativeTotalCreated += d.total_created;
+      cumulativeWorkPoints += d.work_points;
       
       const [y, m, day] = d.date.split('-').map(Number);
       const dateObj = new Date(y, m - 1, day);
@@ -202,9 +210,10 @@ export default function StatusTab() {
         ...d,
         bugs_created: cumulativeBugs,
         enh_created: cumulativeEnhs,
-        projects: cumulativeProjects,
-        remediated: cumulativeRemediated,
-        total_created: cumulativeTotalCreated,
+        projects_created: cumulativeProjects,
+        remediated_count: cumulativeRemediated,
+        total_backlog: cumulativeTotalCreated,
+        remediation_effort: cumulativeWorkPoints,
         date: isNaN(dateObj.getTime()) 
           ? 'Unknown' 
           : dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
@@ -212,18 +221,15 @@ export default function StatusTab() {
     });
   })();
 
-  // Filtered project list
-  const statuses = ['All', ...Array.from(new Set(projects.map(p => p.status || 'Unknown')))];
   const filtered = projects.filter(p => {
     const matchSearch = !search
       || p.name.toLowerCase().includes(search.toLowerCase())
       || (p.description || '').toLowerCase().includes(search.toLowerCase());
     
-    // Metric filter logic
     let matchMetric = true;
     if (filterMetric === 'Bugs') matchMetric = (issuesByProject[p.name]?.bugs || 0) > 0;
     else if (filterMetric === 'Enhancements') matchMetric = (issuesByProject[p.name]?.enhancements || 0) > 0;
-    else if (filterMetric === 'Active') matchMetric = ['Captured', 'Comp', 'DoD', 'SIT', 'UAT'].includes(p.status || '');
+    else if (filterMetric === 'Active') matchMetric = (p.status || '').includes('Active') || ['Captured', 'Comp', 'DoD', 'SIT', 'UAT'].includes(p.status || '');
     else if (filterMetric === 'Standing') matchMetric = p.status === 'Standing';
     else if (filterMetric === 'Active Tab') matchMetric = p.status === 'Active Tab';
 
@@ -238,7 +244,7 @@ export default function StatusTab() {
       <div className="status-stats-row" style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
         {[
           { label: 'Total Projects', value: projects.length, type: 'All' },
-          { label: 'Active',         value: projects.filter(p => ['Captured', 'Comp', 'DoD', 'SIT', 'UAT'].includes(p.status || '')).length, type: 'Active' },
+          { label: 'Active',         value: projects.filter(p => (p.status || '').includes('Active') || ['Captured', 'Comp', 'DoD', 'SIT', 'UAT'].includes(p.status || '')).length, type: 'Active' },
           { label: 'Standing',       value: projects.filter(p => p.status === 'Standing').length, type: 'Standing' },
           { label: 'Tabs',           value: projects.filter(p => p.status === 'Active Tab').length, type: 'Active Tab' },
         ].map(s => (
@@ -247,7 +253,7 @@ export default function StatusTab() {
             className={`stat-tile ${filterMetric === s.type ? 'selected' : ''}`}
             style={{ flex: '1 1 140px', padding: '0.85rem 1rem', textAlign: 'left' }}
             onClick={() => {
-              setFilterMetric(s.type as any);
+              setFilterMetric(filterMetric === s.type ? 'All' : s.type as any);
               setFilterStatus('All');
             }}
           >
@@ -259,11 +265,12 @@ export default function StatusTab() {
             </div>
           </button>
         ))}
+        
         <button 
           className={`stat-tile ${filterMetric === 'Bugs' ? 'selected' : ''}`}
           style={{ flex: '1 1 160px', padding: '0.85rem 1rem', textAlign: 'left' }}
           onClick={() => {
-            setFilterMetric('Bugs');
+            setFilterMetric(filterMetric === 'Bugs' ? 'All' : 'Bugs');
             setFilterStatus('All');
           }}
         >
@@ -274,11 +281,12 @@ export default function StatusTab() {
             of {totalBugsAll} Total Bugs
           </div>
         </button>
+
         <button 
           className={`stat-tile ${filterMetric === 'Enhancements' ? 'selected' : ''}`}
           style={{ flex: '1 1 160px', padding: '0.85rem 1rem', textAlign: 'left' }}
           onClick={() => {
-            setFilterMetric('Enhancements');
+            setFilterMetric(filterMetric === 'Enhancements' ? 'All' : 'Enhancements');
             setFilterStatus('All');
           }}
         >
@@ -289,20 +297,34 @@ export default function StatusTab() {
             of {totalEnhsAll} Total Enh.
           </div>
         </button>
+
+        {/* New KPI: Remediation Effort (#h3sJDtR8SiUIvjCgjlSV) */}
+        <button 
+          className={`stat-tile ${filterMetric === 'Work' ? 'selected' : ''}`}
+          style={{ flex: '1 1 160px', padding: '0.85rem 1rem', textAlign: 'left' }}
+          onClick={() => {
+            setFilterMetric(filterMetric === 'Work' ? 'All' : 'Work');
+            setFilterStatus('All');
+          }}
+        >
+          <div className="stat-number" style={{ fontSize: '1.4rem', fontWeight: 'bold', lineHeight: 1, color: 'var(--pmo-gold)' }}>
+            {issuesLoading ? '…' : totalWorkUnits} <span style={{fontSize: '0.8rem', fontWeight: 'normal'}}>Units</span>
+          </div>
+          <div className="stat-label" style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Remediation Effort
+          </div>
+        </button>
+
       </div>
 
       {/* ── Issue Graph (LineChart with Cumulative Progress) ── */}
       {!issuesLoading && graphData.length > 0 && (
         <div className="card status-graph-card">
           <div className="status-graph-header">
-            <h3 className="status-graph-title">Total Issues Over Time</h3>
-            <div className="status-graph-meta">
-              <span className="status-graph-sub">All projects · {issues.length} lifetime items</span>
-              {lastUpdated && <span className="status-last-updated">Last Updated: {lastUpdated}</span>}
-            </div>
+            <h3>Cumulative System Maturity</h3>
           </div>
-          <ResponsiveContainer width="100%" height={240}>
-            <LineChart data={graphData} margin={{ top: 12, right: 12, left: -20, bottom: 0 }}>
+          <ResponsiveContainer width="100%" height={280}>
+            <LineChart data={graphData} margin={{ top: 12, right: 30, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
               <XAxis 
                 dataKey="date" 
@@ -327,32 +349,40 @@ export default function StatusTab() {
                 }}
               />
               <Legend 
-                wrapperStyle={{ fontSize: '0.8rem', color: 'var(--text-secondary)', paddingTop: '10px' }} 
+                wrapperStyle={{ fontSize: '0.8rem', color: 'var(--text-secondary)', paddingTop: '15px' }} 
                 iconType="circle"
               />
               <Line 
                 type="monotone" 
-                dataKey="total_created" 
-                name="Total Created" 
-                stroke="#FFD700" 
+                dataKey="total_backlog" 
+                name="Total Backlog" 
+                stroke="var(--pmo-gold)" 
                 strokeWidth={3}
-                dot={{ fill: '#FFD700', r: 4, strokeWidth: 2, stroke: 'var(--bg-card)' }}
-                activeDot={{ r: 6, stroke: 'white', strokeWidth: 2 }}
+                dot={{ fill: 'var(--pmo-gold)', r: 3 }}
+                activeDot={{ r: 6 }}
               />
               <Line 
                 type="monotone" 
-                dataKey="remediated" 
-                name="Total Remediated (Work Achieved)" 
-                stroke="#7CC170" 
-                strokeWidth={3}
+                dataKey="remediation_effort" 
+                name="Remediation Work (RU)" 
+                stroke="var(--pmo-green)" 
+                strokeWidth={4}
                 strokeDasharray="5 5"
-                dot={{ fill: '#7CC170', r: 4, strokeWidth: 2, stroke: 'var(--bg-card)' }}
-                activeDot={{ r: 6, stroke: 'white', strokeWidth: 2 }}
+                dot={{ fill: 'var(--pmo-green)', r: 4 }}
+                activeDot={{ r: 8 }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="remediated_count" 
+                name="Remediated Issues" 
+                stroke="#7CC170" 
+                strokeWidth={2}
+                dot={false}
               />
               <Line 
                 type="monotone" 
                 dataKey="bugs_created" 
-                name="Bugs Created" 
+                name="Cumulative Bugs" 
                 stroke="#FF6B6B" 
                 strokeWidth={2}
                 dot={false}
@@ -360,16 +390,8 @@ export default function StatusTab() {
               <Line 
                 type="monotone" 
                 dataKey="enh_created" 
-                name="Enhancements Created" 
+                name="Cumulative Enhancements" 
                 stroke="#469CBE" 
-                strokeWidth={2}
-                dot={false}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="projects" 
-                name="Projects Created" 
-                stroke="#9B59B6" 
                 strokeWidth={2}
                 dot={false}
               />
@@ -378,24 +400,20 @@ export default function StatusTab() {
         </div>
       )}
 
-      {/* ── Filter Bar ── */}
-      <div className="status-filters">
-        <input
-          className="field-input search-input"
-          placeholder="Search projects..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
+      {/* ── Projects Section Header ── */}
+      <div className="status-grid-header">
+        <h3 className="status-grid-title">Projects & Health</h3>
         <div className="filter-group">
-          {statuses.map(s => (
-            <button
-              key={s}
-              className={`filter-btn ${filterStatus === s ? 'active' : ''}`}
-              onClick={() => setFilterStatus(s)}
-            >{s}</button>
-          ))}
+          <span className="filter-label hide-mobile">Quick Search:</span>
+          <input
+            className="field-input search-input"
+            placeholder="Filter projects..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
         </div>
       </div>
+
 
       {/* ── Projects Grid ── */}
       {filtered.length === 0 ? (
@@ -424,7 +442,6 @@ export default function StatusTab() {
                 <div className="project-meta">
                   {p.last_active && <span>🕐 {formatDate(p.last_active)}</span>}
                   {p.current_ai && <span>🤖 {p.current_ai}</span>}
-                  {/* Drive URL (#doCrHy — renders when drive_path starts with https://) */}
                   {p.drive?.startsWith('http') && (
                     <a className="meta-link" href={p.drive} target="_blank" rel="noreferrer">☁ Drive</a>
                   )}
@@ -437,7 +454,6 @@ export default function StatusTab() {
                   )}
                 </div>
 
-                {/* Live issue counts from Firestore (#ZKsdzd) */}
                 {!issuesLoading && (
                   <div className="project-issue-counts">
                     <span className={`issue-chip ${(liveCounts?.bugs || 0) > 0 ? 'issue-chip--bug' : 'issue-chip--zero'}`}>
