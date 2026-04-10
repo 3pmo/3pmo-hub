@@ -83,15 +83,45 @@ function getGaugeClass(pct: number): string {
   return pct > 80 ? 'danger' : pct > 50 ? 'warning' : 'success';
 }
 
-// Returns HH:MM:SS string until next 00:00 UTC
-function timeUntilUTCMidnight(): string {
+// Returns countdown HH:MM:SS and the absolute reset time in GMT
+function timeUntilMidnightInGMT(timeZone: string): { countdown: string, resetGMT: string } {
   const now = new Date();
-  const midnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
-  const diffMs = midnight.getTime() - now.getTime();
+  
+  // 1. Get current time values in the TARGET timezone
+  // Note: We use Intl to get the localized string, then parse parts to avoid timezone math errors
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false
+  });
+  
+  const parts = formatter.formatToParts(now);
+  const getPart = (type: string) => parts.find(p => p.type === type)?.value || '0';
+  
+  // Construct a date object representing "Now" in that TZ, but treated as if it were UTC for easy calculation
+  const nowInTZ = new Date(`${getPart('year')}-${getPart('month')}-${getPart('day')}T${getPart('hour')}:${getPart('minute')}:${getPart('second')}Z`);
+  
+  // 2. Set target to next midnight in that same "TZ-as-UTC" coordinate system
+  const midnightInTZ = new Date(nowInTZ);
+  midnightInTZ.setUTCHours(24, 0, 0, 0);
+  
+  const diffMs = midnightInTZ.getTime() - nowInTZ.getTime();
+  
+  // 3. Calculate what "Midnight in that TZ" is in absolute GMT
+  // Logic: Absolute Midnight GMT = Now_GMT + (MidnightInTZ - NowInTZ)
+  const midnightGMT = new Date(now.getTime() + diffMs);
+  
   const h = Math.floor(diffMs / 3_600_000);
   const m = Math.floor((diffMs % 3_600_000) / 60_000);
   const s = Math.floor((diffMs % 60_000) / 1_000);
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  
+  const resetGMTStr = `${String(midnightGMT.getUTCHours()).padStart(2, '0')}:${String(midnightGMT.getUTCMinutes()).padStart(2, '0')} GMT`;
+  
+  return {
+    countdown: `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`,
+    resetGMT: resetGMTStr
+  };
 }
 
 // Build last N days of YYYY-MM-DD strings (oldest → newest)
@@ -119,10 +149,9 @@ interface AdvisorEntry {
 
 interface AIAdvisorPanelProps {
   entries: AdvisorEntry[];
-  resetCountdown: string;
 }
 
-function AIAdvisorPanel({ entries, resetCountdown }: AIAdvisorPanelProps) {
+function AIAdvisorPanel({ entries }: AIAdvisorPanelProps) {
   const withData = entries.filter(e => e.hasData);
   const best = withData.length > 0
     ? withData.reduce((a, b) => a.pctRemaining > b.pctRemaining ? a : b)
@@ -154,7 +183,7 @@ function AIAdvisorPanel({ entries, resetCountdown }: AIAdvisorPanelProps) {
           🤖 AI Advisor
         </h3>
         <span style={{ fontSize: '0.78rem', color: 'var(--pmo-slate)', fontFamily: 'monospace' }}>
-          Claude resets in <span style={{ color: 'var(--pmo-gold)', fontWeight: 'bold' }}>{resetCountdown}</span> UTC
+          All quotas tracked in <span style={{ color: 'var(--pmo-gold)', fontWeight: 'bold' }}>GMT</span>
         </span>
       </div>
 
@@ -464,7 +493,10 @@ export default function CostTrackerTab() {
   const [refreshError, setRefreshError] = useState('');
   const [refreshSuccess, setRefreshSuccess] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
-  const [resetCountdown, setResetCountdown] = useState(timeUntilUTCMidnight());
+  const [timers, setTimers] = useState({
+    utc: timeUntilMidnightInGMT('UTC'),
+    pacific: timeUntilMidnightInGMT('America/Los_Angeles')
+  });
 
   // Subscribe to snapshot
   useEffect(() => {
@@ -520,7 +552,12 @@ export default function CostTrackerTab() {
 
   // Tick the reset countdown every second
   useEffect(() => {
-    const timer = setInterval(() => setResetCountdown(timeUntilUTCMidnight()), 1000);
+    const timer = setInterval(() => {
+      setTimers({
+        utc: timeUntilMidnightInGMT('UTC'),
+        pacific: timeUntilMidnightInGMT('America/Los_Angeles')
+      });
+    }, 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -575,7 +612,7 @@ export default function CostTrackerTab() {
       emoji: '🟢',
       color: 'var(--pmo-green)',
       pctRemaining: claudePctRemaining,
-      resetLabel: `resets in ${resetCountdown}`,
+      resetLabel: `${timers.utc.resetGMT} (in ${timers.utc.countdown})`,
       taskGuidance: 'Complex coding, architecture, detailed analysis',
       hasData: !!claude,
     },
@@ -584,7 +621,7 @@ export default function CostTrackerTab() {
       emoji: '🟡',
       color: 'var(--pmo-gold)',
       pctRemaining: geminiPctRemaining,
-      resetLabel: 'manual entry',
+      resetLabel: `${timers.pacific.resetGMT} (in ${timers.pacific.countdown})`,
       taskGuidance: 'Large context windows, research, document processing',
       hasData: !!gemini,
     },
@@ -593,7 +630,7 @@ export default function CostTrackerTab() {
       emoji: '🟢',
       color: 'var(--agy-lime)',
       pctRemaining: agPctRemaining,
-      resetLabel: 'supplemental quota',
+      resetLabel: `${timers.utc.resetGMT} (in ${timers.utc.countdown})`,
       taskGuidance: 'Overflow tasks, mixed Claude+Gemini workloads',
       hasData: !!antigravity,
     },
@@ -652,7 +689,7 @@ export default function CostTrackerTab() {
       )}
 
       {/* AI Advisor */}
-      <AIAdvisorPanel entries={advisorEntries} resetCountdown={resetCountdown} />
+      <AIAdvisorPanel entries={advisorEntries} />
 
       {/* Provider Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
