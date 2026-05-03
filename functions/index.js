@@ -180,31 +180,44 @@ exports.onIssueWrite = onDocumentWritten("issues/{issueId}", async (event) => {
 
     const db = admin.firestore();
 
-    const updates = Array.from(projectsToUpdate).map(async (projectSlug) => {
-        const querySnapshot = await db.collection("issues").where("project_slug", "==", projectSlug).get();
-        let bugs = 0;
-        let enhancements = 0;
+    const projectSlugs = Array.from(projectsToUpdate);
 
-        querySnapshot.forEach(doc => {
-            const d = doc.data();
-            // Done, Closed, and Parked mean the issue is resolved/archived
-            if (["Done", "Closed", "Parked"].includes(d.status)) return;
+    // 1. Fetch all relevant issues in one query
+    const querySnapshot = await db.collection("issues")
+        .where("project_slug", "in", projectSlugs)
+        .get();
 
-            if (d.type === "bug") bugs++;
-            if (d.type === "enhancement") enhancements++;
-        });
+    // 2. Aggregate counts per project
+    const counts = {};
+    projectSlugs.forEach(slug => counts[slug] = { bugs: 0, enhancements: 0 });
 
-        console.log(`Updating counts for project ${projectSlug} -> Bugs: ${bugs}, Enhancements: ${enhancements}`);
-        // Only update if the project exists to avoid errors on deleted projects
-        const projRef = db.collection("projects").doc(projectSlug);
-        const projDoc = await projRef.get();
-        if (projDoc.exists) {
-            return projRef.update({
-                backlog_bugs: bugs,
-                backlog_enhancements: enhancements
-            });
+    querySnapshot.forEach(doc => {
+        const d = doc.data();
+        if (["Done", "Closed", "Parked"].includes(d.status)) return;
+
+        const slug = d.project_slug;
+        if (counts[slug]) {
+            if (d.type === "bug") counts[slug].bugs++;
+            else if (d.type === "enhancement") counts[slug].enhancements++;
         }
     });
 
-    return Promise.all(updates);
+    // 3. Fetch all project documents in one batch
+    const projectRefs = projectSlugs.map(slug => db.collection("projects").doc(slug));
+    const projectDocs = await db.getAll(...projectRefs);
+
+    // 4. Update each project
+    const updatePromises = projectDocs
+        .filter(doc => doc.exists)
+        .map(doc => {
+            const slug = doc.id;
+            const { bugs, enhancements } = counts[slug];
+            console.log(`Updating counts for project ${slug} -> Bugs: ${bugs}, Enhancements: ${enhancements}`);
+            return doc.ref.update({
+                backlog_bugs: bugs,
+                backlog_enhancements: enhancements
+            });
+        });
+
+    return Promise.all(updatePromises);
 });
