@@ -1,0 +1,23 @@
+﻿name: "ðŸ” Investigation / Spike"
+description: "Track an investigative spike or diagnostic task."
+title: "[INVESTIGATION] <Short description>"
+labels: ["type:investigation", "status:triage", "priority:P3"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "Objective"
+      description: "What needs to be investigated?"
+      placeholder: "Investigate how to..."
+    validations:
+      required: true
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: "Expected Deliverables"
+      description: "What will the investigation produce?"
+      value: |
+        - [ ] Research findings logged in Drive
+        - [ ] Next steps and issues identified
+    validations:
+      required: true
