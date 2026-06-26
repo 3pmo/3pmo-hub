@@ -1,0 +1,266 @@
+{
+  "_meta": {
+    "description": "Machine-readable architecture schema for 3PMO-Hub. Read this before making structural changes to any tab or service. Keep in sync with ArchitectureTab.tsx and 03-artifacts/system-architecture.md.",
+    "deploy_to": "src/assets/architecture.json",
+    "last_updated": "2026-04-07",
+    "version": "3.0.0",
+    "firebase_project": "hub-3pmo",
+    "live_url": "https://hub-3pmo.web.app",
+    "github_repo": "https://github.com/3pmo/3pmo-hub",
+    "framework": "React 19 + TypeScript + Vite 8",
+    "firebase_plan": "Blaze (required for Cloud Functions external API calls)"
+  },
+
+  "navigation": {
+    "layout": "flat sidebar with visual group labels",
+    "groups": [
+      {
+        "id": "control",
+        "label": "CONTROL",
+        "tabs": ["workflow", "brand", "architecture", "cost-tracker", "issue-tracker"]
+      },
+      {
+        "id": "thoughts",
+        "label": "THOUGHTS",
+        "tabs": ["organizer", "pairwise", "todo"]
+      }
+    ]
+  },
+
+  "tabs": [
+    {
+      "id": "workflow",
+      "name": "Workflow",
+      "component": "WorkflowTab",
+      "file": "src/tabs/WorkflowTab.tsx",
+      "group": "control",
+      "data_sources": [],
+      "static": true,
+      "description": "Renders workflow-diagram.html in a full-height iframe. No live data.",
+      "public_assets": ["public/workflow-diagram.html"]
+    },
+    {
+      "id": "brand",
+      "name": "Brand",
+      "component": "BrandTab",
+      "file": "src/tabs/BrandTab.tsx",
+      "group": "control",
+      "data_sources": [],
+      "static": true,
+      "description": "Static brand reference. Displays 3PMO theme (green/gold/Verdana) and Work theme (red/white/Helvetica) colour swatches and usage rules.",
+      "public_assets": []
+    },
+    {
+      "id": "architecture",
+      "name": "Architecture",
+      "component": "ArchitectureTab",
+      "file": "src/tabs/ArchitectureTab.tsx",
+      "group": "control",
+      "data_sources": [],
+      "static": true,
+      "description": "This architecture reference page. Update LAST_UPDATED constant on any structural change.",
+      "public_assets": []
+    },
+    {
+      "id": "cost-tracker",
+      "name": "Cost Tracker",
+      "component": "CostTrackerTab",
+      "file": "src/tabs/CostTrackerTab.tsx",
+      "group": "control",
+      "data_sources": [
+        {
+          "type": "firebase_rtdb",
+          "path": "hub_cost_tracker/daily/{provider}",
+          "access": "public read/write",
+          "description": "Daily cost entries per AI provider (claude, gemini, antigravity)"
+        },
+        {
+          "type": "firebase_rtdb",
+          "path": "hub_status/token_usage",
+          "access": "public read/write",
+          "description": "Latest Claude token snapshot written by fetchClaudeUsage Cloud Function"
+        },
+        {
+          "type": "cloud_function",
+          "name": "fetchClaudeUsage",
+          "trigger": "HTTP callable",
+          "description": "Calls Anthropic Admin API to fetch Claude Code usage. Writes snapshot to RTDB. Has ~1 hour freshness delay. Requires ANTHROPIC_ADMIN_KEY secret."
+        }
+      ],
+      "auth_required": false,
+      "description": "Tracks token usage and estimated costs for Claude Pro, Gemini Pro, and Antigravity. 7-day line chart (Recharts). Gemini and Antigravity data is entered manually.",
+      "dependencies": ["recharts"]
+    },
+    {
+      "id": "issue-tracker",
+      "name": "Issue Tracker",
+      "component": "IssueTrackerTab",
+      "file": "src/tabs/IssueTrackerTab.tsx",
+      "group": "control",
+      "data_sources": [
+        {
+          "type": "firestore",
+          "collection": "issues",
+          "access": "authenticated create/update; universal read; delete prohibited",
+          "listener": "onSnapshot (real-time)",
+          "description": "All bugs and enhancements across all projects. SSOT for issue tracking."
+        },
+        {
+          "type": "firestore",
+          "collection": "projects",
+          "access": "authenticated create/update; universal read; delete prohibited",
+          "listener": "onSnapshot (real-time)",
+          "description": "Project registry. Also maintained in src/assets/projects.json for dropdown."
+        },
+        {
+          "type": "static_json",
+          "path": "src/assets/projects.json",
+          "description": "Local project list for dropdowns. Synced from Drive via scripts/sync-registry.mjs at build time."
+        }
+      ],
+      "auth_required": true,
+      "description": "Full issue management. CRUD for bugs and enhancements. 4-stage test cycle (Compile → DoD → SIT → UAT). AI-powered Definition of Done generation. Voice capture via Web Speech API. Priority levels P0–P4.",
+      "dependencies": []
+    },
+    {
+      "id": "organizer",
+      "name": "Organiser",
+      "component": "OrganizerTab",
+      "file": "src/tabs/OrganizerTab.tsx",
+      "group": "thoughts",
+      "data_sources": [
+        {
+          "type": "firebase_rtdb",
+          "path": "thoughts",
+          "access": "authenticated only",
+          "listener": "onValue (real-time)",
+          "description": "Per-user thought entries. Keyed by Firebase UID."
+        }
+      ],
+      "auth_required": true,
+      "description": "Personal idea and task capture. Each thought scored by impact (1-10), effort (1-10), urgency (1-10). Priority formula: (impact + (11 - effort) + urgency + weight) / 4. Supports voice input. Filter by category and status.",
+      "dependencies": []
+    },
+    {
+      "id": "pairwise",
+      "name": "Pairwise",
+      "component": "PairwiseTab",
+      "file": "src/tabs/PairwiseTab.tsx",
+      "group": "thoughts",
+      "data_sources": [
+        {
+          "type": "firebase_rtdb",
+          "path": "pairwise_analyses/{uid}",
+          "access": "authenticated only",
+          "listener": "onValue",
+          "description": "Per-user pairwise comparison results."
+        }
+      ],
+      "auth_required": true,
+      "description": "Decision-making tool. Input a list of options; compare them two at a time; receive a ranked output. 4 view modes: List, New, Compare, Results.",
+      "dependencies": []
+    },
+    {
+      "id": "todo",
+      "name": "To-Do",
+      "component": "ToDoTab",
+      "file": "src/tabs/ToDoTab.tsx",
+      "group": "thoughts",
+      "data_sources": [
+        {
+          "type": "google_api",
+          "api": "Google Tasks API",
+          "scope": "tasks.readonly",
+          "auth": "OAuth 2.0 (Google Identity Services)",
+          "description": "Reads user's Google Task lists. Up to 50 lists, 100 tasks per list. Filters completed/hidden items."
+        }
+      ],
+      "auth_required": true,
+      "description": "Read-only view of the user's Google Tasks. No separate task system — surfaces existing Google Tasks directly.",
+      "dependencies": ["VITE_GOOGLE_CLIENT_ID env var", "src/services/googleTasks.ts"]
+    }
+  ],
+
+  "services": [
+    {
+      "id": "firebase",
+      "type": "firebase_project",
+      "project_id": "hub-3pmo",
+      "file": "src/services/firebase.ts",
+      "exports": ["db (RTDB)", "firestore", "auth", "functions", "app"],
+      "rtdb_url": "https://hub-3pmo-default-rtdb.firebaseio.com",
+      "auth_domain": "hub-3pmo.firebaseapp.com"
+    },
+    {
+      "id": "google_tasks",
+      "type": "google_api_client",
+      "file": "src/services/googleTasks.ts",
+      "env_var": "VITE_GOOGLE_CLIENT_ID",
+      "scope": "tasks.readonly"
+    }
+  ],
+
+  "cloud_functions": [
+    {
+      "name": "fetchClaudeUsage",
+      "trigger": "HTTP callable",
+      "runtime": "nodejs20",
+      "description": "Calls Anthropic Admin API endpoint /v1/organizations/usage_report/claude_code. Falls back to yesterday if today's data not ready (~1hr delay). Writes snapshot to RTDB hub_status/token_usage/claude. Requires ANTHROPIC_ADMIN_KEY Firebase Secret.",
+      "requires_blaze": true,
+      "secrets": ["ANTHROPIC_ADMIN_KEY"]
+    },
+    {
+      "name": "onIssueWrite",
+      "trigger": "Firestore onCreate/onUpdate/onDelete on /issues/{issueId}",
+      "runtime": "nodejs20",
+      "description": "Recalculates open issue counts per project after any issue change. Segregates backlog_bugs vs backlog_enhancements. Excludes statuses: Done, Closed, Parked.",
+      "requires_blaze": true,
+      "secrets": []
+    }
+  ],
+
+  "cicd": {
+    "trigger": "push to master branch",
+    "platform": "GitHub Actions",
+    "workflow_file": ".github/workflows/deploy.yml",
+    "steps": ["checkout", "create sync-meta.json with timestamp", "npm ci", "npm run build", "firebase deploy"],
+    "deploy_targets": ["hosting", "functions", "database rules", "firestore rules"],
+    "env_secrets": ["VITE_GOOGLE_CLIENT_ID", "VITE_FIREBASE_API_KEY", "FIREBASE_TOKEN"],
+    "deploy_time_minutes": 2,
+    "note": "Never run firebase deploy manually for production. Use git push to master."
+  },
+
+  "brand": {
+    "3pmo_theme": {
+      "primary": "#2d6a4f",
+      "accent": "#d4a017",
+      "font": "Verdana",
+      "background": "dark"
+    },
+    "work_theme": {
+      "primary": "#c0392b",
+      "accent": "#ffffff",
+      "font": "Helvetica",
+      "background": "light"
+    }
+  },
+
+  "patterns_for_ai": {
+    "adding_a_new_tab": [
+      "1. Create src/tabs/NewTab.tsx as a React FC",
+      "2. Add the tab ID to the Tab enum in App.tsx",
+      "3. Add it to the correct group in App.tsx navigation",
+      "4. Add a case in the tab renderer switch",
+      "5. If using Firestore: follow existing onSnapshot pattern in IssueTrackerTab or StatusTab",
+      "6. If using RTDB: follow onValue pattern in OrganizerTab or PairwiseTab",
+      "7. Update LAST_UPDATED in ArchitectureTab.tsx",
+      "8. Update this file (architecture.json) to add the new tab entry",
+      "9. Update 03-artifacts/system-architecture.md Mermaid diagram",
+      "10. Commit on branch agent/{tool}/{project}/{issue-id} — never directly to master"
+    ],
+    "firestore_rules_pattern": "Universal read; authenticated create/update with field validation; delete prohibited. See firestore.rules.",
+    "rtdb_rules_pattern": "hub_status/token_usage and hub_cost_tracker are public read/write (cost data). All other paths require Firebase Auth.",
+    "branch_naming": "agent/{tool-id}/{project-slug}/{issue-id}",
+    "pr_pattern": "gh pr create && gh pr merge --auto --squash"
+  }
+}
