@@ -4,48 +4,17 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ── PROJECTS collection ─────────────────────────────────────────────────
+    // Decommissioned: Read-only
     match /projects/{projectId} {
       allow read: if true;
-
-      allow create: if
-        request.resource.data.keys().hasAll(['project_slug', 'name', 'status', 'type']) &&
-        request.resource.data.project_slug is string &&
-        request.resource.data.name is string;
-
-      allow update: if
-        // Immutable system fields must not change
-        request.resource.data.project_slug == resource.data.project_slug &&
-        request.resource.data.created_at == resource.data.created_at &&
-        request.resource.data.created_by == resource.data.created_by;
-
-      allow delete: if false;
+      allow write: if false;
     }
 
     // ── ISSUES collection ───────────────────────────────────────────────────
+    // Decommissioned: Read-only
     match /issues/{issueId} {
       allow read: if true;
-
-      // CREATE: all mandatory fields required
-      allow create: if
-        request.resource.data.keys().hasAll([
-          'title', 'description', 'project_slug', 'type',
-          'priority', 'status', 'logged_date',
-          'test_compile', 'test_dod', 'test_sit', 'test_uat'
-        ]) &&
-        request.resource.data.status in ['Captured', 'Comp', 'DoD', 'SIT', 'UAT', 'Release', 'Done', 'Parked', 'Blocked'] &&
-        request.resource.data.priority in ['P0', 'P1', 'P2', 'P3', 'P4'];
-
-      // UPDATE: allow moving project and correcting context
-      allow update: if
-        // Infrastructure fields MUST be immutable
-        request.resource.data.logged_date   == resource.data.logged_date &&
-        request.resource.data.created_at    == resource.data.created_at &&
-        request.resource.data.created_by    == resource.data.created_by &&
-        // Validations
-        request.resource.data.status in ['Captured', 'Comp', 'DoD', 'SIT', 'UAT', 'Release', 'Done', 'Parked', 'Blocked'] &&
-        request.resource.data.priority in ['P0', 'P1', 'P2', 'P3', 'P4'];
-
-      allow delete: if false;
+      allow write: if false;
     }
 
     // ── HISTORY collection ──────────────────────────────────────────────────
