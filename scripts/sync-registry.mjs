@@ -25,8 +25,13 @@ const SA_PATHS = [
 ];
 const SA_PATH = SA_PATHS.find(p => fs.existsSync(p));
 const PROJECT_ID = 'hub-3pmo';
-const OUTPUT_PATH  = path.join(__dirname, '../projects.json');
-const META_PATH    = path.join(__dirname, '../sync-meta.json');
+const isHub = fs.existsSync(path.join(__dirname, '../src/assets'));
+const OUTPUT_PATH  = isHub 
+  ? path.join(__dirname, '../src/assets/projects.json')
+  : path.join(__dirname, '../projects.json');
+const META_PATH    = isHub 
+  ? path.join(__dirname, '../src/assets/sync-meta.json')
+  : path.join(__dirname, '../sync-meta.json');
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 

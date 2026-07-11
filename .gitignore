@@ -28,3 +28,6 @@ dist-ssr
 # Firebase service account keys — NEVER commit these
 scripts/sa-*.json
 *.serviceAccount.json
+
+# Scratch folder
+scratch/

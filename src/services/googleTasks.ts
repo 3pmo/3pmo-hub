@@ -1,6 +1,6 @@
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'MISSING_CLIENT_ID';
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/tasks/v1/rest';
-const SCOPES = 'https://www.googleapis.com/auth/tasks.readonly';
+const SCOPES = 'https://www.googleapis.com/auth/tasks';
 
 let tokenClient: any;
 let gapiInited = false;
@@ -96,3 +96,21 @@ export async function fetchTasks() {
     return [];
   }
 }
+
+export async function createGoogleTask(title: string, notes?: string, tasklistId: string = '@default') {
+  try {
+    const response = await (window as any).gapi.client.tasks.tasks.insert({
+      tasklist: tasklistId,
+      resource: {
+        title,
+        notes,
+        status: 'needsAction'
+      }
+    });
+    return response.result;
+  } catch (err) {
+    console.error("Error creating task:", err);
+    throw err;
+  }
+}
+

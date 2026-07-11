@@ -3,7 +3,7 @@ import { db, auth } from '../services/firebase';
 import { formatDate } from '../utils/formatDate';
 import { ref, push, onValue, off, set } from 'firebase/database';
 import type { DataSnapshot } from 'firebase/database';
-import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 
 interface PairwiseItem {
@@ -43,9 +43,9 @@ function getPairs(items: PairwiseItem[]) {
   return pairs;
 }
 
-export default function PairwiseTab() {
-  const [user, setUser] = useState<User | null>(null);
+export default function PairwiseTab({ user }: { user: User | null }) {
   const [authError, setAuthError] = useState('');
+
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [active, setActive] = useState<Analysis | null>(null);
   const [pairIdx, setPairIdx] = useState(0);
@@ -55,12 +55,9 @@ export default function PairwiseTab() {
   const dbPathRef = useRef('');
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u: User | null) => {
-      setUser(u);
-      dbPathRef.current = u ? `pairwise_analyses/${u.uid}` : '';
-    });
-    return () => unsub();
-  }, []);
+    dbPathRef.current = user ? `pairwise_analyses/${user.uid}` : '';
+  }, [user]);
+
 
   useEffect(() => {
     if (!user) { setAnalyses([]); return; }

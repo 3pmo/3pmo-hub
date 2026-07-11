@@ -1,23 +1,35 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 import { formatDateTime } from './utils/formatDate';
+import StatusTab from './tabs/StatusTab';
 import WorkflowTab from './tabs/WorkflowTab';
-import OrganizerTab from './tabs/OrganizerTab';
 import PairwiseTab from './tabs/PairwiseTab';
 import ToDoTab from './tabs/ToDoTab';
 import BrandTab from './tabs/BrandTab';
 import ArchitectureTab from './tabs/ArchitectureTab';
 import CostTrackerTab from './tabs/CostTrackerTab';
 import IssueTrackerTab from './tabs/IssueTrackerTab';
+import UnifiedOrganizerTab from './tabs/UnifiedOrganizerTab';
+import { auth } from './services/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import type { User } from 'firebase/auth';
+
 import syncMeta from './assets/sync-meta.json';
 
 // Tabs match the old sub-tabs but are now all in the sidebar
-type Tab = 'workflow' | 'organizer' | 'pairwise' | 'todo' | 'brand' | 'architecture' | 'cost' | 'issues';
+type Tab = 'status' | 'workflow' | 'organizer' | 'pairwise' | 'todo' | 'brand' | 'architecture' | 'cost' | 'issues';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<Tab>('workflow');
+  const [activeTab, setActiveTab] = useState<Tab>('status');
   const [isPrintable, setIsPrintable] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [liveUpdate, setLiveUpdate] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => setUser(u));
+    return () => unsub();
+  }, []);
 
   useEffect(() => {
     if (isPrintable) document.documentElement.classList.add('theme-printable');
@@ -26,6 +38,7 @@ export default function App() {
 
   const getTabTitle = (tab: Tab) => {
     switch (tab) {
+      case 'status': return 'Project Status';
       case 'workflow': return 'Ecosystem Workflow';
       case 'organizer': return 'Thought Organizer';
       case 'pairwise': return 'Pairwise Analysis';
@@ -52,6 +65,9 @@ export default function App() {
 
         <nav className="nav-menu">
           <div className="nav-group-title">Control</div>
+          <button className={`nav-link ${activeTab === 'status' ? 'active' : ''}`} onClick={() => setActiveTab('status')}>
+            📊 Status
+          </button>
           <button className={`nav-link ${activeTab === 'workflow' ? 'active' : ''}`} onClick={() => setActiveTab('workflow')}>
             🗺 Workflow
           </button>
@@ -70,7 +86,7 @@ export default function App() {
 
           <div className="nav-group-title">Thoughts</div>
           <button className={`nav-link ${activeTab === 'organizer' ? 'active' : ''}`} onClick={() => setActiveTab('organizer')}>
-            🧠 Organizer
+            🚀 Unified Organizer
           </button>
           <button className={`nav-link ${activeTab === 'pairwise' ? 'active' : ''}`} onClick={() => setActiveTab('pairwise')}>
             ⚖ Pairwise
@@ -96,10 +112,12 @@ export default function App() {
 
         <div className="app-content-wrapper">
           <div className="tab-panel" key={activeTab}>
+            {activeTab === 'status' && <StatusTab onUpdate={setLiveUpdate} />}
             {activeTab === 'workflow' && <WorkflowTab />}
-            {activeTab === 'organizer' && <OrganizerTab />}
-            {activeTab === 'pairwise' && <PairwiseTab />}
-            {activeTab === 'todo' && <ToDoTab />}
+            {activeTab === 'organizer' && <UnifiedOrganizerTab user={user} />}
+            {activeTab === 'pairwise' && <PairwiseTab user={user} />}
+            {activeTab === 'todo' && <ToDoTab user={user} />}
+
             {activeTab === 'brand' && <BrandTab />}
             {activeTab === 'architecture' && <ArchitectureTab />}
             {activeTab === 'cost' && <CostTrackerTab />}
@@ -107,7 +125,11 @@ export default function App() {
           </div>
         </div>
         <footer className="app-footer" style={{ borderTop: '1px solid var(--border-subtle)', padding: '0.75rem 1rem', color: 'var(--pmo-gold)', textAlign: 'center', fontSize: '0.75rem', opacity: 0.8 }}>
-          Ecosystem Last Synchronized: <span style={{ color: 'var(--pmo-green)', fontWeight: 600 }}>{formatDateTime(syncMeta.last_sync)}</span>
+          {liveUpdate || (
+            <>
+              Ecosystem Last Synchronized: <span style={{ color: 'var(--pmo-green)', fontWeight: 600 }}>{formatDateTime(syncMeta.last_sync)}</span>
+            </>
+          )}
         </footer>
       </main>
     </div>
