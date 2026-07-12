@@ -63,4 +63,9 @@
   /* Animation */
   --transition-fast: 0.15s ease-out;
   --transition-smooth: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Button Sizing & Radii */
+  --btn-radius-pmo: var(--radius-pill);
+  --btn-radius-work: var(--radius-sm);
+  --btn-padding: 10px 24px;
 }
