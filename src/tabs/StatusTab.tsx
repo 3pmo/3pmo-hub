@@ -1,3 +1,32 @@
+import { useState, useEffect } from 'react';
+import { collection, query, onSnapshot } from 'firebase/firestore';
+import { firestore } from '../services/firebase';
+import { 
+  ResponsiveContainer, 
+  LineChart, 
+  CartesianGrid, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  Legend, 
+  Line 
+} from 'recharts';
+import { formatDate } from '../utils/formatDate';
+
+interface Project {
+  name: string;
+  status: string | null;
+  description: string | null;
+  current_ai: string | null;
+  last_active: string | null;
+  created_at: string | null;
+  github: string | null;
+  drive: string | null;
+  local: string | null;
+  deploy: string | null;
+  category: string;
+}
+
 interface Issue {
   id: string;
   project_slug: string;
@@ -38,8 +67,8 @@ export default function StatusTab() {
   // ── Live projects from Firestore (Sync with SSOT) ──
   useEffect(() => {
     const q = query(collection(firestore, 'projects'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const parsed: Project[] = snapshot.docs.map(doc => {
+    const unsubscribe = onSnapshot(q, (snapshot: any) => {
+      const parsed: Project[] = snapshot.docs.map((doc: any) => {
         const d = doc.data();
         return {
           name: d.name || doc.id,
@@ -74,9 +103,9 @@ export default function StatusTab() {
   // ── Live issues from Firestore ──
   useEffect(() => {
     const q = query(collection(firestore, 'issues'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(q, (snapshot: any) => {
       const parsed: Issue[] = [];
-      snapshot.forEach(doc => parsed.push({ id: doc.id, ...doc.data() } as Issue));
+      snapshot.forEach((doc: any) => parsed.push({ id: doc.id, ...doc.data() } as Issue));
       setIssues(parsed);
       setIssuesLoading(false);
       setLastUpdated(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
@@ -87,8 +116,8 @@ export default function StatusTab() {
   // ── Live history from Firestore ──
   useEffect(() => {
     const q = query(collection(firestore, 'issue_history'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const parsed = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const unsubscribe = onSnapshot(q, (snapshot: any) => {
+      const parsed = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
       setHistory(parsed);
     });
     return () => unsubscribe();
@@ -110,7 +139,7 @@ export default function StatusTab() {
     return pts;
   };
 
-  const issuesByProject = issues.reduce((acc, iss) => {
+  const issuesByProject = issues.reduce((acc: any, iss: Issue) => {
     if (['Done', 'Blocked'].includes(iss.status)) return acc;
     if (!acc[iss.project_slug]) acc[iss.project_slug] = { bugs: 0, enhancements: 0 };
     if (iss.type === 'bug') acc[iss.project_slug].bugs++;
@@ -123,7 +152,7 @@ export default function StatusTab() {
   const totalOpenEnhs = openIssues.filter(i => i.type === 'enhancement').length;
   const totalBugsAll = issues.filter(i => i.type === 'bug').length;
   const totalEnhsAll = issues.filter(i => i.type === 'enhancement').length;
-  const totalWorkUnits = issues.reduce((sum, iss) => sum + calculateWorkPoints(iss), 0);
+  const totalWorkUnits = issues.reduce((sum: number, iss: Issue) => sum + calculateWorkPoints(iss), 0);
 
   // Issue graph data — Consolidated Cumulative Progress
   const graphData = (() => {
@@ -168,7 +197,7 @@ export default function StatusTab() {
       }
     });
 
-    history.forEach(h => {
+    history.forEach((h: any) => {
       const statusChange = h.changes?.status;
       if (statusChange && ['Done', 'Blocked', 'UAT'].includes(statusChange.new)) {
         const date = getDateStr(h.timestamp);
@@ -180,7 +209,7 @@ export default function StatusTab() {
     });
 
     // 3. Process Projects (Creation)
-    projects.forEach(proj => {
+    projects.forEach((proj: Project) => {
       const date = getDateStr(proj.created_at) ?? getDateStr(proj.last_active);
       if (!date || isNaN(new Date(date).getTime())) return;
       if (!byDate[date]) byDate[date] = { date, bugs: 0, enhancements: 0, projects: 0, remediated: 0, total_created: 0, work_points: 0 };
@@ -221,7 +250,7 @@ export default function StatusTab() {
     });
   })();
 
-  const filtered = projects.filter(p => {
+  const filtered = projects.filter((p: Project) => {
     const matchSearch = !search
       || p.name.toLowerCase().includes(search.toLowerCase())
       || (p.description || '').toLowerCase().includes(search.toLowerCase());
@@ -321,7 +350,11 @@ export default function StatusTab() {
       {!issuesLoading && graphData.length > 0 && (
         <div className="card status-graph-card">
           <div className="status-graph-header">
-            <h3>Cumulative System Maturity</h3>
+            <h3 className="status-graph-title" style={{ margin: 0 }}>Cumulative System Maturity</h3>
+            <div className="status-graph-meta">
+              <span className="status-graph-sub">Consolidated Backlog</span>
+              {lastUpdated && <span className="status-last-updated">Live (Updated {lastUpdated})</span>}
+            </div>
           </div>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={graphData} margin={{ top: 12, right: 30, left: -20, bottom: 0 }}>
@@ -420,7 +453,7 @@ export default function StatusTab() {
         <div className="empty-state">No projects found.</div>
       ) : (
         <div className="projects-grid">
-          {filtered.map(p => {
+          {filtered.map((p: Project) => {
             const liveCounts = issuesByProject[p.name];
             return (
               <div key={p.name} className="card project-card">

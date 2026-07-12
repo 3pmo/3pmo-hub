@@ -822,7 +822,7 @@ export default function IssueTrackerTab() {
                     required
                   >
                     <option value="" disabled>Select project...</option>
-                    {projects.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+                    {projects.map((p: any) => <option key={p.name} value={p.name}>{p.name}</option>)}
                   </select>
                 </div>
                 <div style={{ flex: 1 }}>
