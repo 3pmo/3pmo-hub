@@ -103,8 +103,15 @@ async function main() {
   console.log('Syncing project registry from Firestore REST API...');
 
   try {
-    if (!fs.existsSync(SA_PATH)) {
-      throw new Error(`Service account not found at ${SA_PATH}`);
+    if (!SA_PATH || !fs.existsSync(SA_PATH)) {
+      console.warn('⚠️ Service account not found. Skipping live registry sync, using existing projects.json cache.');
+      if (!fs.existsSync(META_PATH)) {
+        fs.writeFileSync(META_PATH, JSON.stringify({ 
+          last_sync: new Date().toISOString(),
+          sync_method: 'SKIP_CI'
+        }, null, 2));
+      }
+      return;
     }
 
     const serviceAccount = JSON.parse(fs.readFileSync(SA_PATH, 'utf-8'));
