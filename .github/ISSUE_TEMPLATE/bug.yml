@@ -1,0 +1,37 @@
+﻿name: "ðŸ› Bug Report"
+description: "Report a bug or regression in the application."
+title: "[BUG] <Short description>"
+labels: ["type:bug", "status:triage", "priority:P3"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill in the details below to report a bug.
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: "Provide a clear and concise description of the bug."
+      placeholder: "Describe what went wrong..."
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: "Reproduction Steps"
+      description: "Steps to reproduce the behavior."
+      placeholder: "1. Go to...\n2. Click on...\n3. See error..."
+    validations:
+      required: true
+  - type: textarea
+    id: dod
+    attributes:
+      label: "Definition of Done (DoD) Checklist"
+      description: "Verification steps."
+      value: |
+        - [ ] Functional requirements met
+        - [ ] UI consistency check
+        - [ ] Error handling implemented
+        - [ ] Test cases updated/added
+    validations:
+      required: true
