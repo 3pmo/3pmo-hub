@@ -2,10 +2,13 @@ import { useState, useEffect } from 'react';
 import { initGoogleAPI, handleAuthClick, fetchTasks } from '../services/googleTasks';
 import { formatDate } from '../utils/formatDate';
 
-export default function ToDoTab() {
+import { type User } from 'firebase/auth';
+
+export default function ToDoTab({ user: _user }: { user: User | null }) {
   const [tasks, setTasks] = useState<any[]>([]);
   const [isApiReady, setIsApiReady] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
 
   useEffect(() => {
     // Initialize Google API and pass callbacks
