@@ -1,0 +1,27 @@
+﻿name: "ðŸš€ Enhancement Request"
+description: "Suggest an improvement or new feature."
+title: "[ENHANCEMENT] <Short description>"
+labels: ["type:enhancement", "status:triage", "priority:P3"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please propose your enhancement details below.
+  - type: textarea
+    id: description
+    attributes:
+      label: "Proposed Feature"
+      description: "What improvement are you proposing and why?"
+      placeholder: "Explain the feature..."
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Acceptance Criteria"
+      description: "How to verify that this enhancement is complete."
+      value: |
+        - [ ] Feature works in production
+        - [ ] Core paths verified
+    validations:
+      required: true
